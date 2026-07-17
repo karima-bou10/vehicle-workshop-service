@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -32,6 +33,6 @@ public class Mecanicien {
     @Column(name="disponible", nullable = false)
     private boolean disponible = true;
 
-    @OneToMany(mappedBy = "intervention",fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "mecanicien",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Intervention> inetventions;
 }

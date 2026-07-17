@@ -11,7 +11,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
 
 
 import java.math.BigDecimal;
@@ -36,7 +35,7 @@ public class Intervention {
     @Column(name="description_client", nullable = false)
     private String descriptionClient ;
 
-    @Column(name="statut", nullable = false)
+    @Column(name="diagnostic", nullable = false)
     private String diagnostic ;
 
     @Column(name="statut", nullable = false)
@@ -62,10 +61,10 @@ public class Intervention {
     private Vehicule vehicule;
 
     @ManyToOne
-    @JoinColumn(name = "intervention_id", nullable = false)
+    @JoinColumn(name = "mecanicien_id", nullable = false)
     private Mecanicien mecanicien;
 
-    @OneToMany(mappedBy = "intervention",fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "intervention",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<HistoriqueIntervention> historiqueInterventionList;
 
 }
