@@ -11,7 +11,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
 
 
 import java.math.BigDecimal;
@@ -26,23 +25,26 @@ import java.util.List;
 public class Intervention {
 
     @Id
-    @GeneratedValue
-    @Column(name = "id_creance")
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Column(name = "id_intervention")
     private Long id;
 
     @Column(name="type_intervention", nullable = false)
+    @Enumerated(EnumType.STRING)
     private TypeIntervension typeIntervention;
 
     @Column(name="description_client", nullable = false)
     private String descriptionClient ;
 
-    @Column(name="statut", nullable = false)
+    @Column(name="diagnostic", nullable = false)
     private String diagnostic ;
 
     @Column(name="statut", nullable = false)
+    @Enumerated(EnumType.STRING)
     private StatutIntervention statut;
 
     @Column(name="priorite", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Priorite  priorite;
 
     @Column(name="cout_Estime", nullable = false)
