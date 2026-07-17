@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -34,5 +33,5 @@ public class Mecanicien {
     private boolean disponible = true;
 
     @OneToMany(mappedBy = "mecanicien",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Intervention> inetventions;
+    private List<Intervention> interventions;
 }
