@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
@@ -17,10 +18,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Entity
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
+@Entity
 @Table(name = "intervention")
 public class Intervention {
 
@@ -35,7 +37,7 @@ public class Intervention {
     @Column(name="description_client", nullable = false)
     private String descriptionClient ;
 
-    @Column(name="statut", nullable = false)
+    @Column(name="diagnostic", nullable = false)
     private String diagnostic ;
 
     @Column(name="statut", nullable = false)
@@ -61,10 +63,10 @@ public class Intervention {
     private Vehicule vehicule;
 
     @ManyToOne
-    @JoinColumn(name = "intervention_id", nullable = false)
+    @JoinColumn(name = "mecanicien_id", nullable = false)
     private Mecanicien mecanicien;
 
-    @OneToMany(mappedBy = "intervention",fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "intervention",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<HistoriqueIntervention> historiqueInterventionList;
 
 }
