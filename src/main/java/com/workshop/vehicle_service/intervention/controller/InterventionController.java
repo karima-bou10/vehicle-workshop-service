@@ -29,7 +29,7 @@ public class InterventionController {
      * Récupérer une intervention par son ID
      */
     @GetMapping("/{id}")
-    public InterventionResponse recupererUneIntervention(@PathVariable int id) {
+    public InterventionResponse recupererUneIntervention(@PathVariable Long id) {
         return interventionService.recupererUneIntervention(id);
     }
 
@@ -39,7 +39,7 @@ public class InterventionController {
     @PostMapping
     public InterventionResponse enregistrerUneIntervention(
             @RequestBody InterventionRequest interventionRequest) {
-        return interventionService.EnregistrerUneIntervention(interventionRequest);
+        return interventionService.enregistrerUneIntervention(interventionRequest);
     }
 
 
@@ -49,8 +49,26 @@ public class InterventionController {
      */
     @PutMapping
     public InterventionResponse modifierUneIntervention(
-            @RequestBody InterventionRequest interventionRequest) {
-        return interventionService.modifierUneIntervention(interventionRequest);
+            @PathVariable Long id,
+            @RequestBody InterventionRequest request) {
+
+
+            final InterventionRequest newRequest = new InterventionRequest(
+                    id,
+                    request.typeIntervention(),
+                    request.descriptionClient(),
+                    request.diagnostic(),
+                    request.statut(),
+                    request.priorite(),
+                    request.coutEstime(),
+                    request.dateDepot(),
+                    request.dateRestitutionPrevue(),
+                    request.dateCloture(),
+                    request.vehiculeId(),
+                    request.mecanicienId()
+            );
+            return interventionService.modifierUneIntervention(newRequest);
+
     }
 
 
@@ -60,8 +78,8 @@ public class InterventionController {
      */
     @DeleteMapping
     public InterventionResponse supprimerUneIntervention(
-            @RequestBody InterventionRequest interventionRequest) {
-        return interventionService.supprimerUneIntervention(interventionRequest);
+            @PathVariable Long idIntervention) {
+        return interventionService.supprimerUneIntervention(idIntervention);
     }
 
 

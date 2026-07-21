@@ -22,11 +22,11 @@ public interface InterventionService {
 
     List<InterventionResponse> recupererListInterventions();
 
-    InterventionResponse recupererUneIntervention(int id);
+    InterventionResponse recupererUneIntervention(Long idIntervention);
 
     InterventionResponse modifierUneIntervention(InterventionRequest interventionRequest);
 
-    InterventionResponse EnregistrerUneIntervention(InterventionRequest interventionRequest);
+    InterventionResponse enregistrerUneIntervention(InterventionRequest interventionRequest);
 
-    InterventionResponse supprimerUneIntervention(InterventionRequest interventionRequest);
+    InterventionResponse supprimerUneIntervention(Long idIntervention);
 }

@@ -1,6 +1,5 @@
-package com.workshop.vehicle_service.Historique.entity;
+package com.workshop.vehicle_service.intervention.entity;
 
-import com.workshop.vehicle_service.intervention.entity.Intervention;
 import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

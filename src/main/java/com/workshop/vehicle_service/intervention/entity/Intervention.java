@@ -1,6 +1,5 @@
 package com.workshop.vehicle_service.intervention.entity;
 
-import com.workshop.vehicle_service.Historique.entity.HistoriqueIntervention;
 import com.workshop.vehicle_service.intervention.enums.Priorite;
 import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import com.workshop.vehicle_service.intervention.enums.TypeIntervention;
@@ -28,10 +27,11 @@ public class Intervention {
 
     @Id
     @GeneratedValue
-    @Column(name = "id_creance")
+    @Column(name = "id_intervention")
     private Long id;
 
     @Column(name="type_intervention", nullable = false)
+    @Enumerated(EnumType.STRING)
     private TypeIntervention typeIntervention;
 
     @Column(name="description_client", nullable = false)
@@ -41,6 +41,7 @@ public class Intervention {
     private String diagnostic ;
 
     @Column(name="statut", nullable = false)
+    @Enumerated(EnumType.STRING)
     private StatutIntervention statut;
 
     @Column(name="priorite", nullable = false)
