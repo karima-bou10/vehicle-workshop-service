@@ -1,9 +1,8 @@
 package com.workshop.vehicle_service.intervention.entity;
 
-import com.workshop.vehicle_service.Historique.entity.HistoriqueIntervention;
 import com.workshop.vehicle_service.intervention.enums.Priorite;
 import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
-import com.workshop.vehicle_service.intervention.enums.TypeIntervension;
+import com.workshop.vehicle_service.intervention.enums.TypeIntervention;
 import com.workshop.vehicle_service.mecanicien.entity.Mecanicien;
 import com.workshop.vehicle_service.vehicule.entity.Vehicule;
 import jakarta.persistence.*;
@@ -28,11 +27,12 @@ public class Intervention {
 
     @Id
     @GeneratedValue
-    @Column(name = "id_creance")
+    @Column(name = "id_intervention")
     private Long id;
 
     @Column(name="type_intervention", nullable = false)
-    private TypeIntervension typeIntervention;
+    @Enumerated(EnumType.STRING)
+    private TypeIntervention typeIntervention;
 
     @Column(name="description_client", nullable = false)
     private String descriptionClient ;
@@ -41,6 +41,7 @@ public class Intervention {
     private String diagnostic ;
 
     @Column(name="statut", nullable = false)
+    @Enumerated(EnumType.STRING)
     private StatutIntervention statut;
 
     @Column(name="priorite", nullable = false)

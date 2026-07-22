@@ -2,9 +2,7 @@ package com.workshop.vehicle_service.mecanicien.entity;
 
 import com.workshop.vehicle_service.intervention.entity.Intervention;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -12,6 +10,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Table(name = "mecanicien")
 public class Mecanicien {
 

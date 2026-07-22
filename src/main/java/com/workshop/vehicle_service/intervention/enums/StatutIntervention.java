@@ -1,13 +1,14 @@
 package com.workshop.vehicle_service.intervention.enums;
 
 public enum StatutIntervention {
-    DIAGNOSTIC,
-    REVISION,
-    REPARATION,
-    CONTROLE,
-    PNEUMATIQUES,
-    AUTRE;
-
+    RECUE,
+    DEVIS_A_VALIDER,
+    DIAGNOSTIC_EN_COURS,
+    EN_REPARATION,
+    TERNINEE,
+    ANNULEE,
+    TERMINEE,
+    RESTITUEE;
     StatutIntervention() {
 
     }
