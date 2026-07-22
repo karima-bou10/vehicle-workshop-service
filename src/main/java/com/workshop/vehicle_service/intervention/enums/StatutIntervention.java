@@ -5,7 +5,6 @@ public enum StatutIntervention {
     DEVIS_A_VALIDER,
     DIAGNOSTIC_EN_COURS,
     EN_REPARATION,
-    TERNINEE,
     ANNULEE,
     TERMINEE,
     RESTITUEE;
