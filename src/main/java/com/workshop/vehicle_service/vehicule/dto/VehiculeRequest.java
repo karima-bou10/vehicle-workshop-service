@@ -1,10 +1,12 @@
 package com.workshop.vehicle_service.vehicule.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record VehiculeRequest(
 
-        String immatriculationFictive,
-        String marque,
-        String modele,
+        @NotBlank String immatriculationFictive,
+        @NotBlank String marque,
+        @NotBlank String modele,
         Integer annee,
         Integer kilometrage,
         String clientFictif
