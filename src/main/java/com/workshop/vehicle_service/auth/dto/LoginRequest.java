@@ -2,9 +2,13 @@ package com.workshop.vehicle_service.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class LoginRequest {
     @NotBlank(message = "Username cannot be blank")
     public String username;
