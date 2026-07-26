@@ -5,6 +5,9 @@ import com.workshop.vehicle_service.mecanicien.dto.MecanicienResponse;
 import com.workshop.vehicle_service.mecanicien.dto.UpdateMecanicienRequest;
 import com.workshop.vehicle_service.mecanicien.service.MecanicienService;
 import lombok.AllArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,8 +24,9 @@ public class MecanicienController {
 
     @GetMapping("/getAll")
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_MANAGER')")
-    public ResponseEntity<List<MecanicienResponse>> getAllMecaniciens(){
-        return ResponseEntity.ok(mecanicienService.getAllMecaniciens());
+    public ResponseEntity<Page<MecanicienResponse>> getAllMecaniciens(@ParameterObject Pageable pageable) {
+        Page<MecanicienResponse> pageResult = mecanicienService.getAllMecaniciens(pageable);
+        return ResponseEntity.ok(pageResult);
     }
 
     @GetMapping("/get/{id}")

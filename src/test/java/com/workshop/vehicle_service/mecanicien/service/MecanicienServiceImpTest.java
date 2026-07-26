@@ -12,7 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -55,27 +58,35 @@ class MecanicienServiceImpTest {
     }
 
     @Test
-    void testGetAllMecaniciens_ShouldReturnList() {
-        when(mecanicienRepository.findAll()).thenReturn(List.of(mecanicien));
-        when(mecanicienMapper.toResponseList(anyList())).thenReturn(List.of(mecanicienResponse));
+    void testGetAllMecaniciens_ShouldReturnPage() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Mecanicien> mecanicienPage = new PageImpl<>(List.of(mecanicien), pageable, 1);
 
-        List<MecanicienResponse> result = mecanicienService.getAllMecaniciens();
+        when(mecanicienRepository.findAll(any(Pageable.class))).thenReturn(mecanicienPage);
+        when(mecanicienMapper.toResponse(any(Mecanicien.class))).thenReturn(mecanicienResponse);
 
+        Page<MecanicienResponse> result = mecanicienService.getAllMecaniciens(pageable);
+
+        assertNotNull(result);
         assertFalse(result.isEmpty());
-        assertEquals(1, result.size());
-        assertEquals("Doe", result.get(0).getNom());
-        verify(mecanicienRepository, times(1)).findAll();
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals("Doe", result.getContent().get(0).getNom());
     }
 
     @Test
-    void testGetAllMecaniciens_ShouldReturnEmptyList() {
-        when(mecanicienRepository.findAll()).thenReturn(Collections.emptyList());
+    void testGetAllMecaniciens_ShouldReturnEmptyPage() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Mecanicien> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-        List<MecanicienResponse> result = mecanicienService.getAllMecaniciens();
+        when(mecanicienRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
 
+        Page<MecanicienResponse> result = mecanicienService.getAllMecaniciens(pageable);
+
+        assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(mecanicienRepository, times(1)).findAll();
-        verify(mecanicienMapper, never()).toResponseList(any());
+        assertEquals(0, result.getTotalElements());
+        verify(mecanicienRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
@@ -145,10 +156,12 @@ class MecanicienServiceImpTest {
 
     @Test
     void testDeleteMecanicienById_ShouldCallRepositoryDelete() {
+        when(mecanicienRepository.existsById(1L)).thenReturn(true);
         doNothing().when(mecanicienRepository).deleteById(1L);
 
         mecanicienService.deleteMecanicienById(1L);
 
+        verify(mecanicienRepository, times(1)).existsById(1L);
         verify(mecanicienRepository, times(1)).deleteById(1L);
     }
 

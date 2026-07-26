@@ -14,6 +14,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -55,13 +59,20 @@ class MecanicienControllerTest {
 
     @Test
     void testGetAllMecaniciens_ShouldReturn200() throws Exception {
-        when(mecanicienService.getAllMecaniciens()).thenReturn(List.of(mecanicienResponse));
+        Page<MecanicienResponse> pageResponse = new PageImpl<>(List.of(mecanicienResponse),PageRequest.of(0, 10),1);
+
+        when(mecanicienService.getAllMecaniciens(any(Pageable.class))).thenReturn(pageResponse);
 
         mockMvc.perform(get("/api/mecaniciens/getAll")
+                        .param("page", "0")
+                        .param("size", "10")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].nom").value("Doe"));
+                .andExpect(jsonPath("$.content.size()").value(1))
+                .andExpect(jsonPath("$.content[0].nom").value("Doe"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.number").value(0));
     }
 
     @Test

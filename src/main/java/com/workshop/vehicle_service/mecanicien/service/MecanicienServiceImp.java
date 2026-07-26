@@ -1,5 +1,6 @@
 package com.workshop.vehicle_service.mecanicien.service;
 
+import com.workshop.vehicle_service.common.ResourceNotFoundException;
 import com.workshop.vehicle_service.mecanicien.dto.CreateMecanicienRequest;
 import com.workshop.vehicle_service.mecanicien.dto.MecanicienResponse;
 import com.workshop.vehicle_service.mecanicien.dto.UpdateMecanicienRequest;
@@ -9,6 +10,8 @@ import com.workshop.vehicle_service.mecanicien.repository.MecanicienRepository;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,18 +28,17 @@ public class MecanicienServiceImp implements MecanicienService {
     private static final Logger logger = LogManager.getLogger(MecanicienServiceImp.class);
 
     @Override
-    public List<MecanicienResponse> getAllMecaniciens() {
-        List<Mecanicien> mecaniciens = (List<Mecanicien>)mecanicienRepository.findAll();
-        if (mecaniciens.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return mecanicienMapper.toResponseList(mecaniciens);
+    public Page<MecanicienResponse> getAllMecaniciens(Pageable pageable) {
+        Page<Mecanicien> mecaniciensPage = mecanicienRepository.findAll(pageable);
+        return mecaniciensPage.map(mecanicienMapper::toResponse);
     }
 
     @Override
     public MecanicienResponse getMecanicienById(Long id) {
-        return mecanicienRepository.findById(id)
-                .map(mecanicienMapper::toResponse).orElse(null);
+        Mecanicien mecanicien = mecanicienRepository.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException("Mécanicien introuvable avec l'id" + id));
+
+        return mecanicienMapper.toResponse(mecanicien);
     }
 
     @Override
@@ -63,6 +65,9 @@ public class MecanicienServiceImp implements MecanicienService {
 
     @Override
     public void deleteMecanicienById(Long id) {
+        if(!mecanicienRepository.existsById(id)){
+            throw  new ResourceNotFoundException("Mécanicien introuvable avec l'id: "+id);
+        };
         mecanicienRepository.deleteById(id);
         logger.info("Mecanicien deleted successfully");
     }
