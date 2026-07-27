@@ -48,7 +48,8 @@ public class AuthServiceImpl implements AuthService {
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-            return new UtilisateurResponse(userDetails.getUsername(), userDetails.getAuthorities().toString());
+            String role = userDetails.getAuthorities().iterator().next().getAuthority();
+            return new UtilisateurResponse(userDetails.getUsername(), role);
         }
         return new UtilisateurResponse();
     }
