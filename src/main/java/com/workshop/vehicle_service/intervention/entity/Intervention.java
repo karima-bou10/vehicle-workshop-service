@@ -47,16 +47,16 @@ public class Intervention {
     @Column(name="priorite", nullable = false)
     private Priorite  priorite;
 
-    @Column(name="cout_Estime", nullable = false)
+    @Column(name="cout_estime", nullable = false)
     private BigDecimal coutEstime ;
 
     @Column(name="date_depot", nullable = false)
     private LocalDateTime dateDepot ;
 
-    @Column(name="date_restitution_preuve", nullable = false)
+    @Column(name="date_restitution_preuve", nullable = true)
     private  LocalDateTime  dateRestitutionPrevue;
 
-    @Column(name="date_cloture", nullable = false)
+    @Column(name="date_cloture", nullable = true)
     private LocalDateTime  dateCloture ;
 
     @ManyToOne

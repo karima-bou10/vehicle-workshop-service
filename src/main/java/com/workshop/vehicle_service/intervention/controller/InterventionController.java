@@ -3,6 +3,7 @@ package com.workshop.vehicle_service.intervention.controller;
 import com.workshop.vehicle_service.intervention.dtos.InterventionRequest;
 import com.workshop.vehicle_service.intervention.dtos.InterventionResponse;
 import com.workshop.vehicle_service.intervention.service.InterventionService;
+import jakarta.annotation.security.PermitAll;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,7 @@ public class InterventionController {
     /**
      * Récupérer toutes les interventions
      */
+    @PermitAll
     @GetMapping
     public List<InterventionResponse> recupererListInterventions() {
         return interventionService.recupererListInterventions();
@@ -47,7 +49,7 @@ public class InterventionController {
     /**
      * Modifier une intervention
      */
-    @PutMapping
+    @PutMapping("/{id}")
     public InterventionResponse modifierUneIntervention(
             @PathVariable Long id,
             @RequestBody InterventionRequest request) {
@@ -76,7 +78,7 @@ public class InterventionController {
     /**
      * Supprimer une intervention
      */
-    @DeleteMapping
+    @DeleteMapping("/id")
     public InterventionResponse supprimerUneIntervention(
             @PathVariable Long idIntervention) {
         return interventionService.supprimerUneIntervention(idIntervention);

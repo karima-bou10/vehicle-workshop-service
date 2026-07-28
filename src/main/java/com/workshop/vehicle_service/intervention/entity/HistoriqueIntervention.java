@@ -23,9 +23,11 @@ public class HistoriqueIntervention {
     private Long id;
 
     @Column(name = "ancien_statut", nullable = false)
+    @Enumerated(EnumType.STRING)
     private StatutIntervention ancienStatut;
 
     @Column(name = "nouveau_statut", nullable = false)
+    @Enumerated(EnumType.STRING)
     private StatutIntervention nouveauStatut;
 
     @Column(name = "commentaire", nullable = false)
