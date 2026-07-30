@@ -13,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/mecaniciens")
 @AllArgsConstructor
@@ -63,7 +61,15 @@ public class MecanicienController {
 
     @GetMapping("/getAllDisponibles")
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_MANAGER')")
-    public ResponseEntity<List<MecanicienResponse>> getMecaniciensDisponibles(){
-        return ResponseEntity.ok(mecanicienService.getMecaniciensDisponibles());
+    public ResponseEntity<Page<MecanicienResponse>> getMecaniciensDisponibles(@ParameterObject Pageable pageable) {
+        Page<MecanicienResponse> pageResult = mecanicienService.getMecaniciensDisponibles(pageable);
+        return ResponseEntity.ok(pageResult);
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_MANAGER')")
+    public ResponseEntity<Page<MecanicienResponse>> searchMecaniciens(@RequestParam String keyword, @ParameterObject Pageable pageable) {
+        Page<MecanicienResponse> pageResult = mecanicienService.searchMecaniciens(keyword, pageable);
+        return ResponseEntity.ok(pageResult);
     }
 }
