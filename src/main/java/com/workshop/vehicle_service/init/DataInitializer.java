@@ -19,14 +19,14 @@ public class DataInitializer implements CommandLineRunner {
         if(utilisateurRepository.count() == 0) {
             // Création du compte conseiller (ROLE_USER)
             Utilisateur conseiller = new Utilisateur();
-            conseiller.setUsername("conseiller");
+            conseiller.setUsername("Hayat SAIFI C");
             conseiller.setPassword(passwordEncoder.encode("1234")); // ChiffrementBCrypt
             conseiller.setRole("ROLE_USER");
             utilisateurRepository.save(conseiller);
 
             // Création du compte Responsable (ROLE_MANAGER)
             Utilisateur manager = new Utilisateur();
-            manager.setUsername("manager");
+            manager.setUsername("HAYAT SAIFI M");
             manager.setPassword(passwordEncoder.encode("admin123")); // ChiffrementBCrypt
             manager.setRole("ROLE_MANAGER");
             utilisateurRepository.save(manager);
