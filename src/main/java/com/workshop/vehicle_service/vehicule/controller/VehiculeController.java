@@ -20,10 +20,10 @@ import java.util.List;
 public class VehiculeController {
     private final VehiculeService vehiculeService;
 
-    @GetMapping
+    @GetMapping("/getVehicules")
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_MANAGER')")
-    public ResponseEntity<Page<VehiculeResponse>> getAllVehicules(Pageable pageable){
-        return ResponseEntity.ok(vehiculeService.getAllVehicules(pageable));
+    public ResponseEntity<Page<VehiculeResponse>> getAllVehicules(@RequestParam(required = false) String search, Pageable pageable){
+        return ResponseEntity.ok(vehiculeService.getAllVehicules(search, pageable));
     }
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_MANAGER')")
