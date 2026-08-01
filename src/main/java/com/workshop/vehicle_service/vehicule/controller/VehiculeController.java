@@ -21,30 +21,30 @@ public class VehiculeController {
     private final VehiculeService vehiculeService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_MANAGER')")
     public ResponseEntity<Page<VehiculeResponse>> getAllVehicules(Pageable pageable){
         return ResponseEntity.ok(vehiculeService.getAllVehicules(pageable));
     }
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_MANAGER')")
     public ResponseEntity<VehiculeResponse> getVehiculeById(@PathVariable Long id){
          return ResponseEntity.ok(vehiculeService.getVehiculeById(id));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_MANAGER')")
     public ResponseEntity<VehiculeResponse> createVehicule(@Valid @RequestBody VehiculeRequest vehiculeRequest){
         return ResponseEntity.status(HttpStatus.CREATED).body(vehiculeService.createVehicule(vehiculeRequest));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER','MANAGER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_MANAGER')")
     public  ResponseEntity<VehiculeResponse> updateVehicule(@PathVariable Long id, @Valid @RequestBody VehiculeRequest vehiculeRequest){
            return ResponseEntity.ok(vehiculeService.updateVehicule(id, vehiculeRequest));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('ROLE_MANAGER')")
     public ResponseEntity<Void> deleteVehicule(@PathVariable Long id) {
                vehiculeService.deleteVehicule(id);
                return ResponseEntity.noContent().build();

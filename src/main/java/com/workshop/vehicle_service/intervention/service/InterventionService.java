@@ -29,4 +29,6 @@ public interface InterventionService {
     InterventionResponse enregistrerUneIntervention(InterventionRequest interventionRequest);
 
     InterventionResponse supprimerUneIntervention(Long idIntervention);
+
+    List<InterventionResponse> listInterventionsByVehiculeId( Long vehiculeId);
 }
