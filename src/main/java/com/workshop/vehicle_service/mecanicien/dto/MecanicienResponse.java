@@ -1,6 +1,10 @@
 package com.workshop.vehicle_service.mecanicien.dto;
 
+import com.workshop.vehicle_service.intervention.dtos.InterventionResponse;
+import com.workshop.vehicle_service.intervention.entity.Intervention;
 import lombok.*;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -12,4 +16,5 @@ public class MecanicienResponse {
     private String prenom;
     private String specialite;
     private boolean disponible;
+    private List<InterventionResponse> interventions;
 }

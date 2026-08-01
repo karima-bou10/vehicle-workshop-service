@@ -166,14 +166,53 @@ class MecanicienServiceImpTest {
     }
 
     @Test
-    void testGetMecaniciensDisponibles_ShouldReturnList() {
-        when(mecanicienRepository.findByDisponibleTrue()).thenReturn(List.of(mecanicien));
-        when(mecanicienMapper.toResponseList(anyList())).thenReturn(List.of(mecanicienResponse));
+    void testGetMecaniciensDisponibles_ShouldReturnPage() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Mecanicien> mecanicienPage = new PageImpl<>(List.of(mecanicien), pageable, 1);
 
-        List<MecanicienResponse> result = mecanicienService.getMecaniciensDisponibles();
+        when(mecanicienRepository.findByDisponibleTrue(any(Pageable.class))).thenReturn(mecanicienPage);
+        when(mecanicienMapper.toResponse(any(Mecanicien.class))).thenReturn(mecanicienResponse);
 
+        Page<MecanicienResponse> result = mecanicienService.getMecaniciensDisponibles(pageable);
+
+        assertNotNull(result);
         assertFalse(result.isEmpty());
-        verify(mecanicienRepository, times(1)).findByDisponibleTrue();
+        assertEquals(1, result.getTotalElements());
+        verify(mecanicienRepository, times(1)).findByDisponibleTrue(any(Pageable.class));
+    }
+
+    @Test
+    void testSearchMecaniciens_WithValidKeyword_ShouldReturnPage() {
+        String keyword = "John";
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Mecanicien> mecanicienPage = new PageImpl<>(List.of(mecanicien), pageable, 1);
+
+        when(mecanicienRepository.searchByKeyword(eq(keyword), any(Pageable.class))).thenReturn(mecanicienPage);
+        when(mecanicienMapper.toResponse(any(Mecanicien.class))).thenReturn(mecanicienResponse);
+
+        Page<MecanicienResponse> result = mecanicienService.searchMecaniciens(keyword, pageable);
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.getTotalElements());
+        verify(mecanicienRepository, times(1)).searchByKeyword(eq(keyword), any(Pageable.class));
+    }
+
+    @Test
+    void testSearchMecaniciens_WithEmptyKeyword_ShouldCallGetAll() {
+        String emptyKeyword = "   ";
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Mecanicien> mecanicienPage = new PageImpl<>(List.of(mecanicien), pageable, 1);
+
+        when(mecanicienRepository.findAll(any(Pageable.class))).thenReturn(mecanicienPage);
+        when(mecanicienMapper.toResponse(any(Mecanicien.class))).thenReturn(mecanicienResponse);
+
+        Page<MecanicienResponse> result = mecanicienService.searchMecaniciens(emptyKeyword, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(mecanicienRepository, times(1)).findAll(any(Pageable.class));
+        verify(mecanicienRepository, never()).searchByKeyword(anyString(), any(Pageable.class));
     }
 }
 

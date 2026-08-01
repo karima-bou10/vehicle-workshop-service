@@ -141,12 +141,32 @@ class MecanicienControllerTest {
 
     @Test
     void testGetMecaniciensDisponibles_ShouldReturn200() throws Exception {
-        when(mecanicienService.getMecaniciensDisponibles()).thenReturn(List.of(mecanicienResponse));
+        Page<MecanicienResponse> pageResponse = new PageImpl<>(List.of(mecanicienResponse), PageRequest.of(0, 10), 1);
+        when(mecanicienService.getMecaniciensDisponibles(any(Pageable.class))).thenReturn(pageResponse);
 
         mockMvc.perform(get("/api/mecaniciens/getAllDisponibles")
+                        .param("page", "0")
+                        .param("size", "10")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].disponible").value(true));
+                .andExpect(jsonPath("$.content.size()").value(1))
+                .andExpect(jsonPath("$.content[0].disponible").value(true))
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
+    void testSearchMecaniciens_ShouldReturn200() throws Exception {
+        Page<MecanicienResponse> pageResponse = new PageImpl<>(List.of(mecanicienResponse), PageRequest.of(0, 10), 1);
+        when(mecanicienService.searchMecaniciens(eq("Doe"), any(Pageable.class))).thenReturn(pageResponse);
+
+        mockMvc.perform(get("/api/mecaniciens/search")
+                        .param("keyword", "Doe")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.size()").value(1))
+                .andExpect(jsonPath("$.content[0].nom").value("Doe"))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 }
