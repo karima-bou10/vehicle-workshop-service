@@ -9,6 +9,5 @@ public enum StatutIntervention {
     TERMINEE,
     RESTITUEE;
     StatutIntervention() {
-
     }
 }

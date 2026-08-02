@@ -1,7 +1,7 @@
 package com.workshop.vehicle_service.intervention.service;
 
-import com.workshop.vehicle_service.intervention.dtos.InterventionRequest;
-import com.workshop.vehicle_service.intervention.dtos.InterventionResponse;
+import com.workshop.vehicle_service.intervention.dtos.*;
+import com.workshop.vehicle_service.intervention.service.Imp.BusinessException;
 
 /**
  * <h1>Intervention Service</h1>
@@ -24,9 +24,14 @@ public interface InterventionService {
 
     InterventionResponse recupererUneIntervention(Long idIntervention);
 
-    InterventionResponse modifierUneIntervention(InterventionRequest interventionRequest);
+    InterventionResponse modifierUneIntervention(InterventionUpdateRequest interventionUpdateRequest, Long idIntervention);
 
-    InterventionResponse enregistrerUneIntervention(InterventionRequest interventionRequest);
+    InterventionResponse enregistrerUneIntervention(InterventionCreationRequest interventionRequest);
 
     InterventionResponse supprimerUneIntervention(Long idIntervention);
+
+    InterventionResponse affectationMecanicienIntervention(Long interventionId, AffectationMecanicienRequest request) throws BusinessException;
+    InterventionResponse ajouterDiagnostic(Long interventionId, DiagnosticRequest request);
+    InterventionResponse ajouterDevis(Long interventionId, DevisRequest request);
+
 }

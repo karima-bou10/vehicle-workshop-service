@@ -27,7 +27,7 @@ public class Intervention {
 
     @Id
     @GeneratedValue
-    @Column(name = "id_intervention")
+    @Column(name = "id_intervention",nullable = false)
     private Long id;
 
     @Column(name="type_intervention", nullable = false)
@@ -37,20 +37,20 @@ public class Intervention {
     @Column(name="description_client", nullable = false)
     private String descriptionClient ;
 
-    @Column(name="diagnostic", nullable = false)
+    @Column(name="diagnostic")
     private String diagnostic ;
 
-    @Column(name="statut", nullable = false)
+    @Column(name="statut")
     @Enumerated(EnumType.STRING)
     private StatutIntervention statut;
 
-    @Column(name="priorite", nullable = false)
+    @Column(name="priorite")
     private Priorite  priorite;
 
-    @Column(name="cout_estime", nullable = false)
+    @Column(name="cout_estime")
     private BigDecimal coutEstime ;
 
-    @Column(name="date_depot", nullable = false)
+    @Column(name="date_depot")
     private LocalDateTime dateDepot ;
 
     @Column(name="date_restitution_preuve", nullable = true)
@@ -64,7 +64,7 @@ public class Intervention {
     private Vehicule vehicule;
 
     @ManyToOne
-    @JoinColumn(name = "mecanicien_id", nullable = false)
+    @JoinColumn(name = "mecanicien_id", nullable = true)
     private Mecanicien mecanicien;
 
     @OneToMany(mappedBy = "intervention",fetch = FetchType.LAZY, cascade = CascadeType.ALL)

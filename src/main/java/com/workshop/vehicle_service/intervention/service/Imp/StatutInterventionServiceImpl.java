@@ -7,6 +7,8 @@ import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import com.workshop.vehicle_service.intervention.service.StatutInterventionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
@@ -98,14 +100,19 @@ public class StatutInterventionServiceImpl implements StatutInterventionService 
             Intervention intervention,
             StatutIntervention nouveauStatut) {
 
-        if (nouveauStatut == StatutIntervention.EN_REPARATION
-                && intervention.getMecanicien() == null) {
+        if (nouveauStatut == StatutIntervention.EN_REPARATION) {
 
-            throw new RuntimeException(
-                    "Aucun mécanicien affecté");
-        }
-        if(!intervention.getMecanicien().isDisponible()){
-            throw new RuntimeException("Le mecanicien n'est pas disponible");
+            if (intervention.getMecanicien() == null) {
+                throw new RuntimeException(
+                        "Aucun mécanicien affecté"
+                );
+            }
+
+            if (!intervention.getMecanicien().isDisponible()) {
+                throw new RuntimeException(
+                        "Le mécanicien n'est pas disponible"
+                );
+            }
         }
     }
 
@@ -113,11 +120,19 @@ public class StatutInterventionServiceImpl implements StatutInterventionService 
             Intervention intervention,
             StatutIntervention nouveauStatut) {
 
-        if (nouveauStatut == StatutIntervention.DEVIS_A_VALIDER
-                && intervention.getCoutEstime() == null) {
+        if(nouveauStatut == StatutIntervention.DEVIS_A_VALIDER){
 
-            throw new RuntimeException(
-                    "Le coût estimé est obligatoire");
+            if(intervention.getCoutEstime() == null){
+                throw new RuntimeException(
+                        "Le coût estimé est obligatoire"
+                );
+            }
+
+            if(intervention.getCoutEstime().compareTo(BigDecimal.ZERO) <= 0){
+                throw new RuntimeException(
+                        "Le coût estimé doit être supérieur à 0"
+                );
+            }
         }
     }
 
