@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Year;
 import java.util.List;
 
 @Slf4j
@@ -76,7 +77,6 @@ public class interventionServiceImpl implements InterventionService {
         ).orElseThrow(() ->
                 new RuntimeException("Véhicule introuvable"));
 
-
         Intervention intervention = new Intervention();
 
         intervention.setTypeIntervention(
@@ -96,22 +96,30 @@ public class interventionServiceImpl implements InterventionService {
         );
 
         intervention.setDateRestitutionPrevue(
-                interventionRequest.dateDepot()
+                interventionRequest.dateRestitutionPrevue()
         );
 
-
-        // Règle RG-AUTO-03 :
-        // une nouvelle intervention commence toujours par RECUE
+        // RG-AUTO-03
         intervention.setStatut(StatutIntervention.RECUE);
 
-
-        // Relation obligatoire RG-AUTO-01
+        // RG-AUTO-01
         intervention.setVehicule(vehicule);
 
+        // Premier save pour générer l'id
+        intervention = interventionRepository.save(intervention);
 
-        return interventionMapper.toResponse(
-                interventionRepository.save(intervention)
+        // Génération de la référence
+        intervention.setRéférence(
+                "INT-" +
+                        Year.now().getValue() +
+                        "-" +
+                        String.format("%05d", intervention.getId())
         );
+
+        // Mise à jour avec la référence
+        intervention = interventionRepository.save(intervention);
+
+        return interventionMapper.toResponse(intervention);
     }
     @Override
     public InterventionResponse supprimerUneIntervention(Long idIntervention) {
@@ -185,11 +193,13 @@ public class interventionServiceImpl implements InterventionService {
         );
 
 
+        ChangementStatutRequest changementStatutRequest = new ChangementStatutRequest(
+                StatutIntervention.DIAGNOSTIC_EN_COURS,"Diagnostic renseigné"
+        );
+
         statutInterventionService.changerStatutIntervention(
                 intervention,
-                StatutIntervention.DIAGNOSTIC_EN_COURS,
-                "Diagnostic renseigné",
-                "ROLE_USER"
+              changementStatutRequest
         );
 
 
@@ -226,16 +236,36 @@ public class interventionServiceImpl implements InterventionService {
         );
 
 
+        ChangementStatutRequest changementStatutRequest = new ChangementStatutRequest(
+                StatutIntervention.DEVIS_A_VALIDER,"Devis créé"
+        );
         statutInterventionService.changerStatutIntervention(
                 intervention,
-                StatutIntervention.DEVIS_A_VALIDER,
-                "Devis créé",
-                "ROLE_USER"
+            changementStatutRequest
         );
 
 
         return interventionMapper.toResponse(
                 interventionRepository.save(intervention)
         );
+    }
+
+    @Override
+    public InterventionResponse changerStatut(
+            Long id,
+            ChangementStatutRequest request) {
+
+        Intervention intervention = interventionRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Intervention introuvable"));
+
+        intervention = statutInterventionService.changerStatutIntervention(
+                intervention,
+                request
+        );
+
+        intervention = interventionRepository.save(intervention);
+
+        return interventionMapper.toResponse(intervention);
     }
 }

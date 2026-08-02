@@ -1,25 +1,43 @@
 package com.workshop.vehicle_service.intervention.service.Imp;
 
 import com.workshop.vehicle_service.intervention.Repository.HistoriqueInterventionRepository;
+import com.workshop.vehicle_service.intervention.Repository.InterventionRepository;
+import com.workshop.vehicle_service.intervention.dtos.ChangementStatutRequest;
 import com.workshop.vehicle_service.intervention.entity.HistoriqueIntervention;
 import com.workshop.vehicle_service.intervention.entity.Intervention;
 import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import com.workshop.vehicle_service.intervention.service.StatutInterventionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 
 @Service
 @RequiredArgsConstructor
 public class StatutInterventionServiceImpl implements StatutInterventionService {
 
+    @Autowired
     private final HistoriqueInterventionRepository historiqueInterventionRepository;
 
+
     @Override
-    public Intervention changerStatutIntervention(Intervention intervention, StatutIntervention nouveauStatut, String commentaire, String roleUtilisateur) {
+    public Intervention changerStatutIntervention(
+           Intervention intervention,
+            ChangementStatutRequest request) {
+
+
+
+        verifierManager();
+
+
+        StatutIntervention nouveauStatut = request.nouveauStatut();
+        String commentaire = request.commentaire();
+
         verifierTransition(intervention, nouveauStatut);
 
         StatutIntervention ancienStatut = intervention.getStatut();
@@ -28,31 +46,52 @@ public class StatutInterventionServiceImpl implements StatutInterventionService 
 
         verifierMecanicien(intervention, nouveauStatut);
 
-        verifierRestitution(intervention, nouveauStatut, roleUtilisateur);
+        verifierRestitution(intervention, nouveauStatut);
 
-        verifierAnnulation(intervention, nouveauStatut, commentaire, roleUtilisateur);
+        verifierAnnulation(intervention, nouveauStatut, commentaire);
 
-        modifierStatut(nouveauStatut, intervention);
+        modifierStatut(intervention, nouveauStatut);
 
-        creerHistoriqueIntervention(intervention,ancienStatut,nouveauStatut,commentaire,roleUtilisateur);
+        creerHistoriqueIntervention(
+                intervention,
+                ancienStatut,
+                nouveauStatut,
+                commentaire
+        );
 
         return intervention;
     }
 
-    private void creerHistoriqueIntervention(Intervention intervention, StatutIntervention
-            ancienStatut, StatutIntervention nouveauStatut, String commentaire, String roleUtilisateur) {
+    private void modifierStatut(
+            Intervention intervention,
+            StatutIntervention nouveauStatut) {
+
+        intervention.setStatut(nouveauStatut);
+
+        if (nouveauStatut == StatutIntervention.TERMINEE) {
+            intervention.setDateCloture(LocalDateTime.now());
+        }
+    }
+
+    private void creerHistoriqueIntervention(
+            Intervention intervention,
+            StatutIntervention ancienStatut,
+            StatutIntervention nouveauStatut,
+            String commentaire) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
         HistoriqueIntervention historique = new HistoriqueIntervention();
+
         historique.setIntervention(intervention);
         historique.setAncienStatut(ancienStatut);
         historique.setNouveauStatut(nouveauStatut);
         historique.setCommentaire(commentaire);
-        historique.setAuteur(roleUtilisateur);
-        historique.setDate(LocalDateTime.now());
-        historiqueInterventionRepository.save(historique);
-    }
+        historique.setAuteur(authentication.getName());
+        historique.setDateModification(LocalDateTime.now());
 
-    private void modifierStatut(StatutIntervention nouveauStatut, Intervention intervention) {
-        intervention.setStatut(nouveauStatut);
+        historiqueInterventionRepository.save(historique);
     }
 
     private void verifierTransition(
@@ -66,33 +105,34 @@ public class StatutInterventionServiceImpl implements StatutInterventionService 
             case RECUE -> {
                 if (nouveauStatut != StatutIntervention.DIAGNOSTIC_EN_COURS
                         && nouveauStatut != StatutIntervention.ANNULEE)
-                    throw new RuntimeException("Transition interdite");
+                    throw new RuntimeException("Transition interdite.");
             }
 
             case DIAGNOSTIC_EN_COURS -> {
                 if (nouveauStatut != StatutIntervention.DEVIS_A_VALIDER
                         && nouveauStatut != StatutIntervention.ANNULEE)
-                    throw new RuntimeException("Transition interdite");
+                    throw new RuntimeException("Transition interdite.");
             }
 
             case DEVIS_A_VALIDER -> {
                 if (nouveauStatut != StatutIntervention.EN_REPARATION
                         && nouveauStatut != StatutIntervention.ANNULEE)
-                    throw new RuntimeException("Transition interdite");
+                    throw new RuntimeException("Transition interdite.");
             }
 
             case EN_REPARATION -> {
                 if (nouveauStatut != StatutIntervention.TERMINEE
                         && nouveauStatut != StatutIntervention.ANNULEE)
-                    throw new RuntimeException("Transition interdite");
+                    throw new RuntimeException("Transition interdite.");
             }
 
             case TERMINEE -> {
                 if (nouveauStatut != StatutIntervention.RESTITUEE)
-                    throw new RuntimeException("Transition interdite");
+                    throw new RuntimeException("Transition interdite.");
             }
 
-            default -> throw new RuntimeException("Impossible");
+            default ->
+                    throw new RuntimeException("Aucune transition autorisée.");
         }
     }
 
@@ -102,17 +142,11 @@ public class StatutInterventionServiceImpl implements StatutInterventionService 
 
         if (nouveauStatut == StatutIntervention.EN_REPARATION) {
 
-            if (intervention.getMecanicien() == null) {
-                throw new RuntimeException(
-                        "Aucun mécanicien affecté"
-                );
-            }
+            if (intervention.getMecanicien() == null)
+                throw new RuntimeException("Aucun mécanicien affecté.");
 
-            if (!intervention.getMecanicien().isDisponible()) {
-                throw new RuntimeException(
-                        "Le mécanicien n'est pas disponible"
-                );
-            }
+            if (!intervention.getMecanicien().isDisponible())
+                throw new RuntimeException("Le mécanicien est indisponible.");
         }
     }
 
@@ -120,54 +154,57 @@ public class StatutInterventionServiceImpl implements StatutInterventionService 
             Intervention intervention,
             StatutIntervention nouveauStatut) {
 
-        if(nouveauStatut == StatutIntervention.DEVIS_A_VALIDER){
+        if (nouveauStatut == StatutIntervention.DEVIS_A_VALIDER) {
 
-            if(intervention.getCoutEstime() == null){
-                throw new RuntimeException(
-                        "Le coût estimé est obligatoire"
-                );
-            }
+            if (intervention.getCoutEstime() == null)
+                throw new RuntimeException("Le coût estimé est obligatoire.");
 
-            if(intervention.getCoutEstime().compareTo(BigDecimal.ZERO) <= 0){
-                throw new RuntimeException(
-                        "Le coût estimé doit être supérieur à 0"
-                );
-            }
+            if (intervention.getCoutEstime().compareTo(BigDecimal.ZERO) <= 0)
+                throw new RuntimeException("Le coût estimé doit être supérieur à zéro.");
         }
     }
 
     private void verifierAnnulation(
             Intervention intervention,
             StatutIntervention nouveauStatut,
-            String commentaire,
-            String role) {
+            String commentaire) {
 
-        if (nouveauStatut == StatutIntervention.ANNULEE) {
+        if (nouveauStatut != StatutIntervention.ANNULEE)
+            return;
 
-            if (intervention.getStatut() == StatutIntervention.TERMINEE
-                    || intervention.getStatut() == StatutIntervention.RESTITUEE)
-                throw new RuntimeException("Impossible");
+        if (intervention.getStatut() == StatutIntervention.TERMINEE
+                || intervention.getStatut() == StatutIntervention.RESTITUEE)
+            throw new RuntimeException(
+                    "Impossible d'annuler une intervention terminée ou restituée.");
 
-            if (commentaire == null || commentaire.isBlank())
-                throw new RuntimeException("Commentaire obligatoire");
-
-            if (!role.equals("ROLE_MANAGER"))
-                throw new RuntimeException("Accès refusé");
-        }
+        if (commentaire == null || commentaire.isBlank())
+            throw new RuntimeException("Le commentaire est obligatoire.");
     }
 
     private void verifierRestitution(
             Intervention intervention,
-            StatutIntervention nouveauStatut,
-            String role) {
+            StatutIntervention nouveauStatut) {
 
-        if (nouveauStatut == StatutIntervention.RESTITUEE) {
+        if (nouveauStatut != StatutIntervention.RESTITUEE)
+            return;
 
-            if (intervention.getStatut() != StatutIntervention.TERMINEE)
-                throw new RuntimeException("Statut invalide");
+        if (intervention.getStatut() != StatutIntervention.TERMINEE)
+            throw new RuntimeException(
+                    "L'intervention doit être terminée avant la restitution.");
+    }
 
-            if (!role.equals("ROLE_MANAGER"))
-                throw new RuntimeException("Accès refusé");
+    private void verifierManager() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isManager = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+
+        if (!isManager) {
+            throw new RuntimeException(
+                    "Seul un manager est autorisé à changer le statut.");
         }
     }
 }

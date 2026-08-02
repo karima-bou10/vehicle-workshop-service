@@ -30,6 +30,9 @@ public class Intervention {
     @Column(name = "id_intervention",nullable = false)
     private Long id;
 
+    @Column(name="reference_intervention")
+    private String référence;
+
     @Column(name="type_intervention", nullable = false)
     @Enumerated(EnumType.STRING)
     private TypeIntervention typeIntervention;

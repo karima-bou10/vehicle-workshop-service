@@ -14,8 +14,6 @@ public record InterventionUpdateRequest(
 
         Priorite priorite,
 
-        BigDecimal coutEstime,
-
         LocalDateTime dateRestitutionPrevue,
 
         LocalDateTime dateCloture

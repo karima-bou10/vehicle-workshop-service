@@ -7,9 +7,13 @@ import com.workshop.vehicle_service.intervention.entity.HistoriqueIntervention;
 import com.workshop.vehicle_service.intervention.mapper.HistoriqueInterventionMapper;
 import com.workshop.vehicle_service.intervention.service.InterventionService;
 import com.workshop.vehicle_service.intervention.service.historiqueInterventionService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
+@RequiredArgsConstructor
 public class historiqueInterventionServiceImpl implements historiqueInterventionService {
 
     private  InterventionRepository interventionRepository;

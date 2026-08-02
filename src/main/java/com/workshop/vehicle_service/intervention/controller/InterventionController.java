@@ -3,8 +3,11 @@ package com.workshop.vehicle_service.intervention.controller;
 import com.workshop.vehicle_service.intervention.dtos.*;
 import com.workshop.vehicle_service.intervention.service.Imp.BusinessException;
 import com.workshop.vehicle_service.intervention.service.InterventionService;
+import com.workshop.vehicle_service.intervention.service.StatutInterventionService;
 import jakarta.annotation.security.PermitAll;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +19,7 @@ import java.util.List;
 public class InterventionController {
 
     private InterventionService interventionService;
+    private StatutInterventionService statutInterventionService;
 
 
     /**
@@ -63,7 +67,7 @@ public class InterventionController {
             @PathVariable Long idIntervention,
             @RequestBody InterventionUpdateRequest request) {
 
-            return interventionService.modifierUneIntervention(request, idIntervention);
+        return interventionService.modifierUneIntervention(request, idIntervention);
     }
 
 
@@ -97,14 +101,31 @@ public class InterventionController {
     }
 
 
+    @PutMapping("/{id}/statut")
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
+    public ResponseEntity<InterventionResponse> changerStatut(
+            @PathVariable Long id,
+            @RequestBody @Valid ChangementStatutRequest request) {
 
-
-
-
-
-
-
-
-
+      InterventionResponse interventionResponse =
+              interventionService.changerStatut(id, request);
+        return ResponseEntity.ok(interventionResponse);
+    }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

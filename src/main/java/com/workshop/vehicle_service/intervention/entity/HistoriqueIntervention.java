@@ -37,7 +37,7 @@ public class HistoriqueIntervention {
     private String auteur;
 
     @Column(name = "date", nullable = false)
-    private LocalDateTime date;
+    private LocalDateTime dateModification;
 
     @ManyToOne
     @JoinColumn(name = "intervention_id")

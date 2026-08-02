@@ -1,7 +1,9 @@
 package com.workshop.vehicle_service.intervention.service;
 
 import com.workshop.vehicle_service.intervention.dtos.*;
+import com.workshop.vehicle_service.intervention.entity.Intervention;
 import com.workshop.vehicle_service.intervention.service.Imp.BusinessException;
+import jakarta.validation.Valid;
 
 /**
  * <h1>Intervention Service</h1>
@@ -34,4 +36,6 @@ public interface InterventionService {
     InterventionResponse ajouterDiagnostic(Long interventionId, DiagnosticRequest request);
     InterventionResponse ajouterDevis(Long interventionId, DevisRequest request);
 
+
+    InterventionResponse changerStatut(Long id, @Valid ChangementStatutRequest request);
 }
