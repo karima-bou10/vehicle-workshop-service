@@ -35,8 +35,11 @@ public class VehiculeServiceImpl implements VehiculeService {
      * @return une page d'objets VehiculeResponse représentant tous les véhicules
      */
     @Override
-    public Page<VehiculeResponse> getAllVehicules(Pageable pageable) {
-        return vehiculeRepository.findAll(pageable).map(vehiculeMapper::toResponse);
+    public Page<VehiculeResponse> getAllVehicules(String search, Pageable pageable) {
+        Page<Vehicule> result = (search != null && !search.isBlank())
+                ?vehiculeRepository.searchByKeyword(search.trim(), pageable)
+                :vehiculeRepository.findAll(pageable);
+        return result.map(vehiculeMapper::toResponse);
     }
 
     /**
