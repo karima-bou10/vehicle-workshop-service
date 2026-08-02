@@ -16,9 +16,11 @@ import java.util.List;
 @AllArgsConstructor
 public class HistoriqueInterventionController {
 
+    private historiqueInterventionService historiqueInterventionService;
+
     @GetMapping("/{id}/historique")
     public List<HistoriqueInterventionResponse> getHistorique(
             @PathVariable Long id) {
-        return historiqueInterventionService.recupererHistoriqueParIntervention(id);
+        return historiqueInterventionService.getHistoriqueIntervention(id);
     }
 }

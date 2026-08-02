@@ -5,13 +5,12 @@ import com.workshop.vehicle_service.intervention.Repository.InterventionReposito
 import com.workshop.vehicle_service.intervention.dtos.HistoriqueInterventionResponse;
 import com.workshop.vehicle_service.intervention.entity.HistoriqueIntervention;
 import com.workshop.vehicle_service.intervention.mapper.HistoriqueInterventionMapper;
-import com.workshop.vehicle_service.intervention.mapper.historiqueInterventionMapper;
 import com.workshop.vehicle_service.intervention.service.InterventionService;
 import com.workshop.vehicle_service.intervention.service.historiqueInterventionService;
 
 import java.util.List;
 
-public class historiqueInterventionServiceImpl implements historiqueInterventionService {2
+public class historiqueInterventionServiceImpl implements historiqueInterventionService {
 
     private  InterventionRepository interventionRepository;
     private HistoriqueInterventionRepository historiqueInterventionRepository;
