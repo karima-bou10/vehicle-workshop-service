@@ -2,6 +2,9 @@ package com.workshop.vehicle_service.intervention.service.Imp;
 
 import com.workshop.vehicle_service.intervention.Repository.InterventionRepository;
 import com.workshop.vehicle_service.intervention.dtos.*;
+import com.workshop.vehicle_service.intervention.api.InterventionQuery;
+import com.workshop.vehicle_service.intervention.dtos.InterventionRequest;
+import com.workshop.vehicle_service.intervention.dtos.InterventionResponse;
 import com.workshop.vehicle_service.intervention.entity.Intervention;
 import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import com.workshop.vehicle_service.intervention.mapper.InterventionMapper;
@@ -21,7 +24,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class interventionServiceImpl implements InterventionService {
+public class interventionServiceImpl implements InterventionService, InterventionQuery {
 
 
     private final InterventionRepository interventionRepository;
@@ -30,6 +33,11 @@ public class interventionServiceImpl implements InterventionService {
     private final InterventionMapper interventionMapper;
     private final StatutInterventionService statutInterventionService;
 
+    /**
+     * Récupère la liste de toutes les interventions.
+     *
+     * @return une liste d'objets InterventionResponse représentant toutes les interventions
+     */
     @Override
     public List<InterventionResponse> recupererListInterventions() {
 
@@ -39,6 +47,13 @@ public class interventionServiceImpl implements InterventionService {
 
     }
 
+    /**
+     * Récupère une intervention spécifique par son identifiant.
+     *
+     * @param idIntervention l'identifiant de l'intervention à récupérer
+     * @return un objet InterventionResponse représentant l'intervention trouvée
+     * @throws RuntimeException si l'intervention n'est pas trouvée
+     */
     @Override
     public InterventionResponse recupererUneIntervention(Long idIntervention) {
 
@@ -49,6 +64,13 @@ public class interventionServiceImpl implements InterventionService {
         return interventionMapper.toResponse(intervention);
 
     }
+    /**
+     * Modifie une intervention existante.
+     *
+     * @param interventionRequest l'objet InterventionRequest contenant les nouvelles informations de l'intervention
+     * @return un objet InterventionResponse représentant l'intervention modifiée
+     * @throws RuntimeException si l'intervention, le véhicule ou le mécanicien n'est pas trouvé
+     */
 
     @Override
     public InterventionResponse modifierUneIntervention(InterventionUpdateRequest interventionUpdateRequest, Long idIntervention) {
@@ -178,6 +200,13 @@ public class interventionServiceImpl implements InterventionService {
         return interventionMapper.toResponse(saved);
     }
 
+    /**
+     * Enregistre une nouvelle intervention.
+     *
+     * @param interventionRequest l'objet InterventionRequest contenant les informations de la nouvelle intervention
+     * @return un objet InterventionResponse représentant l'intervention enregistrée
+     * @throws RuntimeException si le véhicule ou le mécanicien n'est pas trouvé
+     */
     @Override
     public InterventionResponse ajouterDiagnostic(Long interventionId, DiagnosticRequest request) {
         Intervention intervention =
@@ -267,5 +296,17 @@ public class interventionServiceImpl implements InterventionService {
         intervention = interventionRepository.save(intervention);
 
         return interventionMapper.toResponse(intervention);
+    }
+
+    /**
+     * Récupère la liste des interventions par id vehicule
+     * @param vehiculeId
+     * @return une liste d'objets InterventionResponse représentant les interventions d un vehicule
+     */
+    @Override
+    public List<InterventionResponse> listInterventionsByVehiculeId(Long vehiculeId) {
+        return interventionMapper.toResponseList(
+                interventionRepository.getInterventionByVehiculeId(vehiculeId)
+        );
     }
 }

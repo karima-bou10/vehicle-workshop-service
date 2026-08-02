@@ -15,8 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-
 @Service
 @Transactional
 @AllArgsConstructor
@@ -73,11 +71,17 @@ public class MecanicienServiceImp implements MecanicienService {
     }
 
     @Override
-    public List<MecanicienResponse> getMecaniciensDisponibles() {
-        List<Mecanicien> mecaniciensDisponibles = (List<Mecanicien>)mecanicienRepository.findByDisponibleTrue();
-        if (mecaniciensDisponibles.isEmpty()) {
-            return Collections.emptyList();
+    public Page<MecanicienResponse> getMecaniciensDisponibles(Pageable pageable) {
+        Page<Mecanicien> mecaniciensPage = mecanicienRepository.findByDisponibleTrue(pageable);
+        return mecaniciensPage.map(mecanicienMapper::toResponse);
+    }
+
+    @Override
+    public Page<MecanicienResponse> searchMecaniciens(String keyword, Pageable pageable) {
+        if(keyword == null || keyword.trim().isEmpty()){
+            return getAllMecaniciens(pageable);
         }
-        return mecanicienMapper.toResponseList(mecaniciensDisponibles);
+        Page<Mecanicien> mecaniciensPage = mecanicienRepository.searchByKeyword(keyword, pageable);
+        return mecaniciensPage.map(mecanicienMapper::toResponse);
     }
 }

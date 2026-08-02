@@ -5,7 +5,6 @@ import com.workshop.vehicle_service.mecanicien.dto.MecanicienResponse;
 import com.workshop.vehicle_service.mecanicien.dto.UpdateMecanicienRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import java.util.List;
 
 public interface MecanicienService {
     Page<MecanicienResponse> getAllMecaniciens(Pageable pageable);
@@ -18,5 +17,7 @@ public interface MecanicienService {
 
     void deleteMecanicienById(Long id);
 
-    List<MecanicienResponse> getMecaniciensDisponibles();
+    Page<MecanicienResponse> getMecaniciensDisponibles(Pageable pageable);
+
+    Page<MecanicienResponse> searchMecaniciens(String keyword, Pageable pageable);
 }

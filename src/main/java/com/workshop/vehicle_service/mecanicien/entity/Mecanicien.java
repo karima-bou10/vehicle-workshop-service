@@ -32,6 +32,6 @@ public class Mecanicien {
     @Column(name="disponible", nullable = false)
     private boolean disponible = true;
 
-    @OneToMany(mappedBy = "mecanicien",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "mecanicien",fetch = FetchType.LAZY)
     private List<Intervention> interventions;
 }

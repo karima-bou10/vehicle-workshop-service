@@ -15,16 +15,21 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex){
         return buildResponse(HttpStatus.NOT_FOUND, "Ressource introuvable", ex.getMessage());
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex){
+        if (ex.getMessage() != null && ex.getMessage().contains("interventions existantes")) {
+            return buildResponse(HttpStatus.CONFLICT, "Conflit d'intégrité", ex.getMessage());
+        }
+        return buildResponse(HttpStatus.BAD_REQUEST, "Requete invalide", ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex){
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(err ->err.getField() + ":" +err.getDefaultMessage())
                 .collect(Collectors.joining(" ; "));
         return buildResponse(HttpStatus.BAD_REQUEST, "Données invalides", message);
-    }
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex){
-        return buildResponse(HttpStatus.BAD_REQUEST, "Requete invalide", ex.getMessage());
     }
 
     private  ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String erreur, String message){
