@@ -1,6 +1,7 @@
 package com.workshop.vehicle_service.intervention.service.Imp;
 
 import com.workshop.vehicle_service.intervention.Repository.InterventionRepository;
+import com.workshop.vehicle_service.intervention.dtos.*;
 import com.workshop.vehicle_service.intervention.api.InterventionQuery;
 import com.workshop.vehicle_service.intervention.dtos.InterventionRequest;
 import com.workshop.vehicle_service.intervention.dtos.InterventionResponse;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Year;
 import java.util.List;
 
 @Slf4j
@@ -71,67 +73,76 @@ public class interventionServiceImpl implements InterventionService, Interventio
      */
 
     @Override
-    public InterventionResponse modifierUneIntervention(InterventionRequest interventionRequest) {
-        Intervention intervention = interventionRepository.findById(interventionRequest.id())
-                .orElseThrow(() ->
-                        new RuntimeException("Intervention introuvable"));
+    public InterventionResponse modifierUneIntervention(InterventionUpdateRequest interventionUpdateRequest, Long idIntervention) {
+        Intervention intervention =
+                interventionRepository.findById(idIntervention)
+                        .orElseThrow(() ->
+                                new RuntimeException("Intervention introuvable"));
 
-       /* if(!intervention.getStatut().equals(interventionRequest.statut()){
-            statutInterventionService.changerStatutIntervention(interventionRequest);
-        }*/
-        interventionMapper.updateEntity(interventionRequest, intervention);
 
-        Vehicule vehicule = vehiculeRepository.findById(interventionRequest.vehiculeId())
-                .orElseThrow(() ->
-                        new RuntimeException("Vehicule introuvable"));
+        interventionMapper.updateEntity(interventionUpdateRequest, intervention);
 
-        Mecanicien mecanicien = mecanicienRepository.findById(interventionRequest.mecanicienId())
-                .orElseThrow(() ->
-                        new RuntimeException("Mecanicien introuvable"));
-
-        intervention.setVehicule(vehicule);
-        intervention.setMecanicien(mecanicien);
-
-        intervention = interventionRepository.save(intervention);
-
-        return interventionMapper.toResponse(intervention);
-    }
-
-    /**
-     * Enregistre une nouvelle intervention.
-     *
-     * @param interventionRequest l'objet InterventionRequest contenant les informations de la nouvelle intervention
-     * @return un objet InterventionResponse représentant l'intervention enregistrée
-     * @throws RuntimeException si le véhicule ou le mécanicien n'est pas trouvé
-     */
-    @Override
-    public InterventionResponse enregistrerUneIntervention(InterventionRequest interventionRequest) {
-        log.debug("Début du traitement pour enregistrer une intervention");
-
-        Vehicule vehicule = vehiculeRepository.findById(interventionRequest.vehiculeId())
-                .orElseThrow(() -> new RuntimeException("Vehicule introuvable"));
-
-        Mecanicien mecanicien = mecanicienRepository.findById(interventionRequest.mecanicienId())
-                .orElseThrow(() -> new RuntimeException("Mecanicien introuvable"));
-
-        Intervention intervention = interventionMapper.toEntity(interventionRequest);
-
-        intervention.setVehicule(vehicule);
-        intervention.setMecanicien(mecanicien);
 
         return interventionMapper.toResponse(
                 interventionRepository.save(intervention)
         );
-
     }
 
-    /**
-     * Supprime une intervention existante par son identifiant.
-     *
-     * @param idIntervention l'identifiant de l'intervention à supprimer
-     * @return un objet InterventionResponse représentant l'intervention supprimée
-     * @throws RuntimeException si l'intervention n'est pas trouvée
-     */
+    @Override
+    public InterventionResponse enregistrerUneIntervention(
+            InterventionCreationRequest interventionRequest) {
+
+        log.debug("Début création intervention");
+
+        Vehicule vehicule = vehiculeRepository.findById(
+                interventionRequest.vehiculeId()
+        ).orElseThrow(() ->
+                new RuntimeException("Véhicule introuvable"));
+
+        Intervention intervention = new Intervention();
+
+        intervention.setTypeIntervention(
+                interventionRequest.typeIntervention()
+        );
+
+        intervention.setDescriptionClient(
+                interventionRequest.descriptionClient()
+        );
+
+        intervention.setPriorite(
+                interventionRequest.priorite()
+        );
+
+        intervention.setDateDepot(
+                interventionRequest.dateDepot()
+        );
+
+        intervention.setDateRestitutionPrevue(
+                interventionRequest.dateRestitutionPrevue()
+        );
+
+        // RG-AUTO-03
+        intervention.setStatut(StatutIntervention.RECUE);
+
+        // RG-AUTO-01
+        intervention.setVehicule(vehicule);
+
+        // Premier save pour générer l'id
+        intervention = interventionRepository.save(intervention);
+
+        // Génération de la référence
+        intervention.setRéférence(
+                "INT-" +
+                        Year.now().getValue() +
+                        "-" +
+                        String.format("%05d", intervention.getId())
+        );
+
+        // Mise à jour avec la référence
+        intervention = interventionRepository.save(intervention);
+
+        return interventionMapper.toResponse(intervention);
+    }
     @Override
     public InterventionResponse supprimerUneIntervention(Long idIntervention) {
         Intervention intervention = interventionRepository.findById(idIntervention)
@@ -146,6 +157,147 @@ public class interventionServiceImpl implements InterventionService, Interventio
         return response;
     }
 
+    @Override
+    public InterventionResponse affectationMecanicienIntervention(
+            Long interventionId,
+            AffectationMecanicienRequest request) throws BusinessException {
+
+
+        Intervention intervention = interventionRepository.findById(interventionId)
+                .orElseThrow(() ->
+                        new RuntimeException("Intervention introuvable"));
+
+
+        Mecanicien mecanicien = mecanicienRepository.findById(request.mecanicienId())
+                .orElseThrow(() ->
+                        new RuntimeException("Mécanicien introuvable"));
+
+
+        if (!mecanicien.isDisponible()) {
+            throw new RuntimeException(
+                    "Le mécanicien n'est pas disponible"
+            );
+        }
+
+        if (
+                (intervention.getStatut() == StatutIntervention.EN_REPARATION) ||
+                        (intervention.getStatut() == StatutIntervention.TERMINEE) ||
+                        (intervention.getStatut() == StatutIntervention.RESTITUEE) ||
+                        (intervention.getStatut() == StatutIntervention.ANNULEE)
+        ) {
+            throw new BusinessException(
+                    "Impossible d'affecter un mécanicien à cette intervention"
+            );
+        }
+
+
+        intervention.setMecanicien(mecanicien);
+
+
+        Intervention saved = interventionRepository.save(intervention);
+
+
+        return interventionMapper.toResponse(saved);
+    }
+
+    /**
+     * Enregistre une nouvelle intervention.
+     *
+     * @param interventionRequest l'objet InterventionRequest contenant les informations de la nouvelle intervention
+     * @return un objet InterventionResponse représentant l'intervention enregistrée
+     * @throws RuntimeException si le véhicule ou le mécanicien n'est pas trouvé
+     */
+    @Override
+    public InterventionResponse ajouterDiagnostic(Long interventionId, DiagnosticRequest request) {
+        Intervention intervention =
+                interventionRepository.findById(interventionId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Intervention introuvable"
+                                ));
+
+
+        intervention.setDiagnostic(
+                request.diagnostic()
+        );
+
+
+        ChangementStatutRequest changementStatutRequest = new ChangementStatutRequest(
+                StatutIntervention.DIAGNOSTIC_EN_COURS,"Diagnostic renseigné"
+        );
+
+        statutInterventionService.changerStatutIntervention(
+                intervention,
+              changementStatutRequest
+        );
+
+
+        return interventionMapper.toResponse(
+                interventionRepository.save(intervention)
+        );
+    }
+
+    @Override
+    public InterventionResponse ajouterDevis(
+            Long interventionId,
+            DevisRequest request) {
+
+
+        Intervention intervention =
+                interventionRepository.findById(interventionId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Intervention introuvable"
+                                ));
+
+
+        if(intervention.getDiagnostic() == null
+                || intervention.getDiagnostic().isBlank()) {
+
+            throw new RuntimeException(
+                    "Le diagnostic est obligatoire avant le devis"
+            );
+        }
+
+
+        intervention.setCoutEstime(
+                request.coutEstime()
+        );
+
+
+        ChangementStatutRequest changementStatutRequest = new ChangementStatutRequest(
+                StatutIntervention.DEVIS_A_VALIDER,"Devis créé"
+        );
+        statutInterventionService.changerStatutIntervention(
+                intervention,
+            changementStatutRequest
+        );
+
+
+        return interventionMapper.toResponse(
+                interventionRepository.save(intervention)
+        );
+    }
+
+    @Override
+    public InterventionResponse changerStatut(
+            Long id,
+            ChangementStatutRequest request) {
+
+        Intervention intervention = interventionRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Intervention introuvable"));
+
+        intervention = statutInterventionService.changerStatutIntervention(
+                intervention,
+                request
+        );
+
+        intervention = interventionRepository.save(intervention);
+
+        return interventionMapper.toResponse(intervention);
+    }
+
     /**
      * Récupère la liste des interventions par id vehicule
      * @param vehiculeId
@@ -156,31 +308,5 @@ public class interventionServiceImpl implements InterventionService, Interventio
         return interventionMapper.toResponseList(
                 interventionRepository.getInterventionByVehiculeId(vehiculeId)
         );
-    }
-
-    /**
-     * Récupère toutes les interventions associées à un véhicule spécifique.
-     *
-     * @param vehiculeId l'identifiant du véhicule dont on souhaite récupérer les interventions
-     * @return une liste d'interventions associées au véhicule spécifié
-     */
-    @Override
-    public List<InterventionResponse> getInterventionsByVehiculeId(Long vehiculeId) {
-        List<Intervention> interventions = interventionRepository.getInterventionByVehiculeId(vehiculeId);
-        return interventionMapper.toResponseList(interventions);
-    }
-
- /**
-     * Récupère toutes les interventions ayant un statut spécifique pour un véhicule donné.
-     *
-     * @param idVehicule l'identifiant du véhicule dont on souhaite récupérer les interventions
-     * @param statut     le statut des interventions à récupérer
-     * @return une liste d'interventions correspondant au statut spécifié pour le véhicule donné
-     */
-    @Override
-    public List<InterventionResponse> getInterventionsByStatut(Long idVehicule, StatutIntervention statut) {
-        List<Intervention> interventions = interventionRepository
-                .getInterventionByVehiculeIdAndStatutIn(idVehicule, List.of(statut));
-        return interventionMapper.toResponseList(interventions);
     }
 }

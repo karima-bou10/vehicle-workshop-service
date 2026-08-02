@@ -36,8 +36,14 @@ public record InterventionResponse(
 
         String immatriculationVehicule,
 
+        String marque,
+
+        String modele,
+
         Long mecanicienId,
 
-        String nomMecanicien
+        String nomMecanicien,
+
+        String reference
 ) {
 }
