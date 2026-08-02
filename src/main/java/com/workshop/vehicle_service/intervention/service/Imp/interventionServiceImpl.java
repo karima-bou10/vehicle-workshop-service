@@ -24,7 +24,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class interventionServiceImpl implements InterventionService, InterventionQuery {
+public class interventionServiceImpl implements InterventionService, InterventionQuery  {
 
 
     private final InterventionRepository interventionRepository;
@@ -67,7 +67,7 @@ public class interventionServiceImpl implements InterventionService, Interventio
     /**
      * Modifie une intervention existante.
      *
-     * @param interventionRequest l'objet InterventionRequest contenant les nouvelles informations de l'intervention
+     * @param interventionUpdateRequest l'objet InterventionRequest contenant les nouvelles informations de l'intervention
      * @return un objet InterventionResponse représentant l'intervention modifiée
      * @throws RuntimeException si l'intervention, le véhicule ou le mécanicien n'est pas trouvé
      */
@@ -200,13 +200,6 @@ public class interventionServiceImpl implements InterventionService, Interventio
         return interventionMapper.toResponse(saved);
     }
 
-    /**
-     * Enregistre une nouvelle intervention.
-     *
-     * @param interventionRequest l'objet InterventionRequest contenant les informations de la nouvelle intervention
-     * @return un objet InterventionResponse représentant l'intervention enregistrée
-     * @throws RuntimeException si le véhicule ou le mécanicien n'est pas trouvé
-     */
     @Override
     public InterventionResponse ajouterDiagnostic(Long interventionId, DiagnosticRequest request) {
         Intervention intervention =

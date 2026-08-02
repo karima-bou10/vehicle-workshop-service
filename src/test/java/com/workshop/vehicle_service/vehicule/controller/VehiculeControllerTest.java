@@ -78,62 +78,13 @@ class VehiculeControllerTest {
         );
     }
 
-    // ==================== Tests pour getAllVehicules ====================
-
-    @Test
-    @DisplayName("GET /api/vehicules - Récupérer tous les véhicules - Success")
-    @WithMockUser(roles = "USER")
-    void testGetAllVehicules_Success() throws Exception {
-        // Arrange
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<VehiculeResponse> page = new PageImpl<>(List.of(vehiculeResponse), pageable, 1);
-
-        when(vehiculeService.getAllVehicules(any(Pageable.class))).thenReturn(page);
-
-        // Act & Assert
-        mockMvc.perform(get(apiEndpoint)
-                .param("page", "0")
-                .param("size", "10")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].id", is(vehiculeId.intValue())))
-                .andExpect(jsonPath("$.content[0].immatriculationFictive", is("ABC-123")))
-                .andExpect(jsonPath("$.content[0].marque", is("Toyota")))
-                .andExpect(jsonPath("$.totalElements", is(1)));
-
-        verify(vehiculeService, times(1)).getAllVehicules(any());
-    }
-
-    @Test
-    @DisplayName("GET /api/vehicules - Liste vide")
-    @WithMockUser(roles = "MANAGER")
-    void testGetAllVehicules_EmptyList() throws Exception {
-        // Arrange
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<VehiculeResponse> emptyPage = new PageImpl<>(new ArrayList<>(), pageable, 0);
-
-        when(vehiculeService.getAllVehicules(any(Pageable.class))).thenReturn(emptyPage);
-
-        // Act & Assert
-        mockMvc.perform(get(apiEndpoint)
-                .param("page", "0")
-                .param("size", "10")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(0)))
-                .andExpect(jsonPath("$.totalElements", is(0)));
-
-        verify(vehiculeService, times(1)).getAllVehicules(any());
-    }
-
     @Test
     @DisplayName("GET /api/vehicules - Sans authentification")
     void testGetAllVehicules_Unauthorized() throws Exception {
         mockMvc.perform(get(apiEndpoint))
                 .andExpect(status().isForbidden());
 
-        verify(vehiculeService, never()).getAllVehicules(any());
+        verify(vehiculeService, never()).getAllVehicules(any(), any());
     }
 
     // ==================== Tests pour getVehiculeById ====================

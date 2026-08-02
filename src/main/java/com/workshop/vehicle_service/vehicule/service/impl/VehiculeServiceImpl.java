@@ -90,7 +90,7 @@ public class VehiculeServiceImpl implements VehiculeService {
             throw  new ResourceNotFoundException("Véhicule introuvable avec l'id"+id);
         }
 
-        if (!interventionQuery.getInterventionsByVehiculeId(id).isEmpty()) {
+        if (!interventionQuery.listInterventionsByVehiculeId(id).isEmpty()) {
             throw new RuntimeException("Suppression impossible : le véhicule est déjà associé à des interventions existantes.");
         }
 
