@@ -16,15 +16,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class historiqueInterventionServiceImpl implements historiqueInterventionService {
 
-    private  InterventionRepository interventionRepository;
-    private HistoriqueInterventionRepository historiqueInterventionRepository;
-    private HistoriqueInterventionMapper    historiqueInterventionMapper;
+    private final InterventionService interventionService;
+    private final HistoriqueInterventionRepository historiqueInterventionRepository;
+    private final HistoriqueInterventionMapper    historiqueInterventionMapper;
 
     @Override
     public List<HistoriqueInterventionResponse> getHistoriqueIntervention(Long interventionId) {
 
-        interventionRepository.findById(interventionId)
-                .orElseThrow(() -> new RuntimeException("Intervention introuvable"));
+       interventionService.recupererUneIntervention(interventionId);
 
         List<HistoriqueIntervention> historiques =
                 historiqueInterventionRepository
