@@ -26,7 +26,7 @@ import java.util.List;
 public class Intervention {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_intervention",nullable = false)
     private Long id;
 
