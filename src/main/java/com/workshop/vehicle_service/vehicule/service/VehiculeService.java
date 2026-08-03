@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface VehiculeService {
 
-    Page<VehiculeResponse> getAllVehicules(Pageable pageable);
+    Page<VehiculeResponse> getAllVehicules(String search, Pageable pageable);
 
     VehiculeResponse getVehiculeById(Long id);
 

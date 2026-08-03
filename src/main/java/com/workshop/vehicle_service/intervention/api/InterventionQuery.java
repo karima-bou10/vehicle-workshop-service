@@ -18,14 +18,7 @@ public interface InterventionQuery {
      * @param vehiculeId l'identifiant du véhicule dont on souhaite récupérer les interventions
      * @return une liste d'interventions associées au véhicule spécifié
      */
-    List<InterventionResponse> getInterventionsByVehiculeId(Long vehiculeId);
+    List<InterventionResponse> listInterventionsByVehiculeId(Long vehiculeId);
 
-    /**
-     * Récupère toutes les interventions ayant un statut spécifique.
-     *
-     * @param idVehicule le statut des interventions à récupérer
-     * @param statut     le statut des interventions à récupérer
-     * @return une liste d'interventions correspondant au statut spécifié
-     */
-    List<InterventionResponse> getInterventionsByStatut(Long idVehicule, StatutIntervention statut);
+
 }
