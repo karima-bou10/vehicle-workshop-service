@@ -27,7 +27,7 @@ public class Intervention {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_intervention",nullable = false)
+    @Column(name = "id_intervention")
     private Long id;
 
     @Column(name="reference_intervention")

@@ -56,6 +56,7 @@ public class InterventionController {
     }
 
 
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @PutMapping("/{id}/affecter")
     public InterventionResponse affecterMecanicien(
             @PathVariable Long id,
@@ -67,7 +68,8 @@ public class InterventionController {
     /**
      * Modifier une intervention
      */
-    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
+    @PutMapping("/{id}/edit")
     public InterventionResponse modifierUneIntervention(
             @PathVariable Long idIntervention,
             @RequestBody InterventionUpdateRequest request) {
@@ -79,6 +81,7 @@ public class InterventionController {
     /**
      * Supprimer une intervention
      */
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @DeleteMapping("/id")
     public InterventionResponse supprimerUneIntervention(
             @PathVariable Long idIntervention) {
@@ -89,6 +92,7 @@ public class InterventionController {
     /**
      * Ajouter Diagnostic
      */
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @PutMapping("/{id}/diagnostic")
     public InterventionResponse ajouterDiagnostic(
             @PathVariable Long id,
@@ -97,6 +101,7 @@ public class InterventionController {
         return interventionService.ajouterDiagnostic(id, request);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @PutMapping("/{id}/devis")
     public InterventionResponse ajouterDevis(
             @PathVariable Long id,
