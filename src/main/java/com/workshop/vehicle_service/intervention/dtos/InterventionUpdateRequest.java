@@ -17,6 +17,5 @@ public record InterventionUpdateRequest(
         LocalDateTime dateRestitutionPrevue,
 
         LocalDateTime dateDepot
-
 ) {
 }
