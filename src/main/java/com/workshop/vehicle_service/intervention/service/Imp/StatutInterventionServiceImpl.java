@@ -7,6 +7,8 @@ import com.workshop.vehicle_service.intervention.entity.HistoriqueIntervention;
 import com.workshop.vehicle_service.intervention.entity.Intervention;
 import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import com.workshop.vehicle_service.intervention.service.StatutInterventionService;
+import com.workshop.vehicle_service.mecanicien.entity.Mecanicien;
+import com.workshop.vehicle_service.mecanicien.service.MecanicienService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -23,6 +25,9 @@ public class StatutInterventionServiceImpl implements StatutInterventionService 
 
     @Autowired
     private final HistoriqueInterventionRepository historiqueInterventionRepository;
+
+    @Autowired
+    private final MecanicienService mecanicienService;
 
 
     @Override
@@ -68,8 +73,10 @@ public class StatutInterventionServiceImpl implements StatutInterventionService 
 
         intervention.setStatut(nouveauStatut);
 
+
         if (nouveauStatut == StatutIntervention.TERMINEE) {
             intervention.setDateCloture(LocalDateTime.now());
+            mecanicienService.getMecanicienById(intervention.getMecanicien().getId()).setDisponible(true);
         }
     }
 
@@ -144,9 +151,6 @@ public class StatutInterventionServiceImpl implements StatutInterventionService 
 
             if (intervention.getMecanicien() == null)
                 throw new RuntimeException("Aucun mécanicien affecté.");
-
-            if (!intervention.getMecanicien().isDisponible())
-                throw new RuntimeException("Le mécanicien est indisponible.");
         }
     }
 

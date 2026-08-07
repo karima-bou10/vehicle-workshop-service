@@ -30,7 +30,6 @@ public class DataInitializer implements CommandLineRunner {
             manager.setPassword(passwordEncoder.encode("admin123")); // ChiffrementBCrypt
             manager.setRole("ROLE_MANAGER");
             utilisateurRepository.save(manager);
-
             System.out.println("Comptes fictifs crées avec succes");
         }
 

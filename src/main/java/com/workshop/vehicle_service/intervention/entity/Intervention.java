@@ -31,7 +31,7 @@ public class Intervention {
     private Long id;
 
     @Column(name="reference_intervention")
-    private String référence;
+    private String reference;
 
     @Column(name="type_intervention", nullable = false)
     @Enumerated(EnumType.STRING)

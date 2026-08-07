@@ -28,9 +28,6 @@ public interface InterventionMapper {
 
     List<InterventionResponse> toResponseList(List<Intervention> list);
 
-    @Mapping(target = "vehicule", ignore = true)
-    @Mapping(target = "mecanicien", ignore = true)
-    @Mapping(target = "historiqueInterventionList", ignore = true)
     void updateEntity(InterventionUpdateRequest request,
                       @MappingTarget Intervention intervention);
 }
