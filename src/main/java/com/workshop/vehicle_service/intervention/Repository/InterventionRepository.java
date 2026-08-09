@@ -16,4 +16,8 @@ public interface InterventionRepository extends JpaRepository<Intervention, Long
     List<Intervention> getInterventionByVehiculeIdAndStatutIn(Long vehiculeId, List<StatutIntervention> statuts);
 
     long countByDateRestitutionPrevueBeforeAndStatutIsNot(LocalDateTime date, StatutIntervention statut);
-    List<Intervention> findByDateRestitutionPrevueBeforeAndStatutIsNot(LocalDateTime maintenant, StatutIntervention statut);}
+    List<Intervention> findByDateRestitutionPrevueBeforeAndStatutIsNot(LocalDateTime maintenant, StatutIntervention statut);
+
+    List<Intervention> getInterventionByMecanicienId(Long mecanicienId);
+}
+

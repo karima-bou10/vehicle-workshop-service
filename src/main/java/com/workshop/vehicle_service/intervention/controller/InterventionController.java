@@ -36,6 +36,11 @@ public class InterventionController {
         return interventionService.listInterventionsByVehiculeId(vehiculeId);
     }
 
+    @GetMapping("/mecaniciens/{mecanicienId}/interventions")
+    public List<InterventionResponse> listInterventionsByMecanicienId(@PathVariable Long mecanicienId) {
+        return interventionService.listInterventionsByMecanicienId(mecanicienId);
+    }
+
 
     /**
      * Récupérer une intervention par son ID

@@ -4,7 +4,6 @@ import com.workshop.vehicle_service.dashboard.dto.*;
 import com.workshop.vehicle_service.intervention.Repository.InterventionRepository;
 import com.workshop.vehicle_service.intervention.dtos.InterventionResponse;
 import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
-import com.workshop.vehicle_service.intervention.mapper.InterventionMapper;
 import com.workshop.vehicle_service.intervention.service.InterventionService;
 import com.workshop.vehicle_service.mecanicien.dto.MecanicienResponse;
 import com.workshop.vehicle_service.mecanicien.service.MecanicienService;
@@ -25,7 +24,6 @@ public class DashboardServiceImp implements DashboardService {
     private final InterventionService interventionService;
     private final MecanicienService mecanicienService;
     private final InterventionRepository interventionRepository;
-    private final InterventionMapper interventionMapper;
 
     @Override
     public DashboardResumeDto calculerResumeGlobal() {
@@ -75,14 +73,5 @@ public class DashboardServiceImp implements DashboardService {
 
             return new ChargeMecanicienDto(mec.getId(), mec.getNom(), charge);
         }).toList();
-    }
-
-    /** Liste des interventions en retard */
-    public List<InterventionResponse> getInterventionsEnRetard() {
-        return interventionRepository
-                .findByDateRestitutionPrevueBeforeAndStatutIsNot(LocalDateTime.now(), StatutIntervention.RESTITUEE)
-                .stream()
-                .map(interventionMapper::toResponse)
-                .toList();
     }
 }
