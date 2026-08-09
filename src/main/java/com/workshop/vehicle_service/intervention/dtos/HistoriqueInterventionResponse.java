@@ -13,6 +13,8 @@ public record HistoriqueInterventionResponse(
 
         String auteur,
 
-        LocalDateTime date) {
+        String username,
+
+        LocalDateTime dateModification) {
 
 }
