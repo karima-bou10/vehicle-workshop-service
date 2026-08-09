@@ -26,12 +26,12 @@ import java.util.List;
 public class Intervention {
 
     @Id
-    @GeneratedValue
-    @Column(name = "id_intervention",nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_intervention")
     private Long id;
 
     @Column(name="reference_intervention")
-    private String référence;
+    private String reference;
 
     @Column(name="type_intervention", nullable = false)
     @Enumerated(EnumType.STRING)
