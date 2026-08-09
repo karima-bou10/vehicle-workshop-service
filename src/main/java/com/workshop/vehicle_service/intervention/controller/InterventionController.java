@@ -53,14 +53,13 @@ public class InterventionController {
     /**
      * Enregistrer une nouvelle intervention
      */
-    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @PostMapping("/new")
     public InterventionResponse enregistrerUneIntervention(
             @RequestBody InterventionCreationRequest interventionRequest) {
         return interventionService.enregistrerUneIntervention(interventionRequest);
     }
 
-
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @PutMapping("/{id}/affecter")
     public InterventionResponse affecterMecanicien(
             @PathVariable Long id,
@@ -72,18 +71,21 @@ public class InterventionController {
     /**
      * Modifier une intervention
      */
-    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
+    @PutMapping("/{id}/edit")
     public InterventionResponse modifierUneIntervention(
-            @PathVariable Long idIntervention,
-            @RequestBody InterventionUpdateRequest request) {
+            @PathVariable Long id,
+            @RequestBody InterventionUpdateRequest request) throws BusinessException {
 
-        return interventionService.modifierUneIntervention(request, idIntervention);
+        return interventionService.modifierUneIntervention(request, id);
+
     }
 
 
     /**
      * Supprimer une intervention
      */
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @DeleteMapping("/id")
     public InterventionResponse supprimerUneIntervention(
             @PathVariable Long idIntervention) {
@@ -94,14 +96,16 @@ public class InterventionController {
     /**
      * Ajouter Diagnostic
      */
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @PutMapping("/{id}/diagnostic")
     public InterventionResponse ajouterDiagnostic(
             @PathVariable Long id,
-            @RequestBody DiagnosticRequest request) {
+            @RequestBody DiagnosticRequest request) throws BusinessException {
 
         return interventionService.ajouterDiagnostic(id, request);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @PutMapping("/{id}/devis")
     public InterventionResponse ajouterDevis(
             @PathVariable Long id,
@@ -121,7 +125,6 @@ public class InterventionController {
               interventionService.changerStatut(id, request);
         return ResponseEntity.ok(interventionResponse);
     }
-
 }
 
 

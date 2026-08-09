@@ -12,6 +12,8 @@ public interface HistoriqueInterventionMapper {
 
     @Mapping(target = "ancienStatut", expression = "java(historique.getAncienStatut().name())")
     @Mapping(target = "nouveauStatut", expression = "java(historique.getNouveauStatut().name())")
+    @Mapping(target = "auteur", source="auteur")
+    @Mapping(target = "dateModification", source = "dateModification")
     HistoriqueInterventionResponse toResponse(HistoriqueIntervention historique);
 
     List<HistoriqueInterventionResponse> toResponseList(List<HistoriqueIntervention> historiques);
