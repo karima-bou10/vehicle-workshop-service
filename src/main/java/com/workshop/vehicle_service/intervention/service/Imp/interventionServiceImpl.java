@@ -319,4 +319,16 @@ public class interventionServiceImpl implements InterventionService, Interventio
                 interventionRepository.getInterventionByVehiculeId(vehiculeId)
         );
     }
+
+    /**
+     * Récupère la liste des interventions par id mecanicien
+     * @param mecanicienId
+     * @return une liste d'objets InterventionResponse représentant les interventions d'un mecanicien
+     */
+    @Override
+    public List<InterventionResponse> listInterventionsByMecanicienId(Long mecanicienId) {
+        return interventionMapper.toResponseList(
+                interventionRepository.getInterventionByMecanicienId(mecanicienId)
+        );
+    }
 }

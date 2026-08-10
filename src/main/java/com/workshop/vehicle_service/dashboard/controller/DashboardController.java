@@ -25,8 +25,10 @@ public class DashboardController {
     }
 
     @GetMapping("/charge-mecaniciens")
-    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_MANAGER')")
     public ResponseEntity<List<ChargeMecanicienDto>> getChargeMecaniciens() {
         return ResponseEntity.ok(dashboardService.calculerChargeMecaniciens());
     }
 }
+
+
