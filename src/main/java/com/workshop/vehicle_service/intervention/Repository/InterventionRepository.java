@@ -20,7 +20,9 @@ public interface InterventionRepository extends JpaRepository<Intervention, Long
 
     List<Intervention> findByDeletedFalse();
     List<Intervention> findByDeletedTrue();
+    List<Intervention> getInterventionByMecanicienId(Long mecanicienId);
 
 
 }
+
 

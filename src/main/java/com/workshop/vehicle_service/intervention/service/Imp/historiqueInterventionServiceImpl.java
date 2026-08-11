@@ -23,7 +23,7 @@ public class historiqueInterventionServiceImpl implements historiqueIntervention
     @Override
     public List<HistoriqueInterventionResponse> getHistoriqueIntervention(Long interventionId) {
 
-       interventionService.recupererUneIntervention(interventionId);
+        interventionService.recupererUneIntervention(interventionId);
 
         List<HistoriqueIntervention> historiques =
                 historiqueInterventionRepository

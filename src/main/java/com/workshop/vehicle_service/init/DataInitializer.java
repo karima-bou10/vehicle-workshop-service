@@ -32,6 +32,5 @@ public class DataInitializer implements CommandLineRunner {
             utilisateurRepository.save(manager);
             System.out.println("Comptes fictifs crées avec succes");
         }
-
     }
 }
