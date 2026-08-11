@@ -136,6 +136,16 @@ public class InterventionController {
     public List<InterventionResponse> recupererHistoriqueInterventions() {
         return interventionService.recupererHistoriqueComplet();
     }
+
+
+
+    @GetMapping("/retards")
+
+    public List<InterventionResponse> getInterventionsEnRetard() {
+
+        return interventionService.getInterventionsRestitueEnRetard();
+
+    }
 }
 
 

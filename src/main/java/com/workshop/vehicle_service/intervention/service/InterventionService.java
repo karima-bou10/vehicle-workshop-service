@@ -41,4 +41,6 @@ public interface InterventionService {
     List<InterventionResponse> listInterventionsByVehiculeId( Long vehiculeId);
     List<InterventionResponse> listInterventionsByMecanicienId( Long mecanicienId);
     List<InterventionResponse> recupererHistoriqueComplet();
+
+    List<InterventionResponse>  getInterventionsRestitueEnRetard();
 }

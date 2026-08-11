@@ -356,4 +356,14 @@ public class interventionServiceImpl implements InterventionService, Interventio
                 .toList();
 
     }
+
+    public List<InterventionResponse> getInterventionsRestitueEnRetard() {
+
+        List<Intervention> interventions =
+                interventionRepository.findInterventionsEnRetard();
+
+        return interventions.stream()
+                .map(interventionMapper::toResponse)
+                .toList();
+    }
 }
