@@ -82,10 +82,15 @@ public class InterventionController {
      * Supprimer une intervention
      */
     @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
-    @DeleteMapping("/id")
+
+    @DeleteMapping("/{id}")
+
     public InterventionResponse supprimerUneIntervention(
-            @PathVariable Long idIntervention) {
-        return interventionService.supprimerUneIntervention(idIntervention);
+
+    @PathVariable Long id) {
+
+        return interventionService.supprimerUneIntervention(id);
+
     }
 
 

@@ -70,6 +70,9 @@ public class Intervention {
     @JoinColumn(name = "mecanicien_id", nullable = true)
     private Mecanicien mecanicien;
 
+    @Column(nullable = false)
+    private Boolean deleted = false;
+
     @OneToMany(mappedBy = "intervention",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<HistoriqueIntervention> historiqueInterventionList;
 
