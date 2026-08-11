@@ -130,6 +130,12 @@ public class InterventionController {
               interventionService.changerStatut(id, request);
         return ResponseEntity.ok(interventionResponse);
     }
+
+    @PermitAll
+    @GetMapping("/historique")
+    public List<InterventionResponse> recupererHistoriqueInterventions() {
+        return interventionService.recupererHistoriqueComplet();
+    }
 }
 
 

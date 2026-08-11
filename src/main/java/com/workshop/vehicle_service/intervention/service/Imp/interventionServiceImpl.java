@@ -341,4 +341,19 @@ public class interventionServiceImpl implements InterventionService, Interventio
                 interventionRepository.getInterventionByMecanicienId(mecanicienId)
         );
     }
+
+    @Override
+    public List<InterventionResponse> recupererHistoriqueComplet() {
+
+        List<Intervention> interventions =
+
+                interventionRepository.findAll();
+
+        return interventions.stream()
+
+                .map(interventionMapper::toResponse)
+
+                .toList();
+
+    }
 }

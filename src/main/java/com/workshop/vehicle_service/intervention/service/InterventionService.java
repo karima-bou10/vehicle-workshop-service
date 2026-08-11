@@ -40,4 +40,5 @@ public interface InterventionService {
     InterventionResponse changerStatut(Long id, @Valid ChangementStatutRequest request);
     List<InterventionResponse> listInterventionsByVehiculeId( Long vehiculeId);
     List<InterventionResponse> listInterventionsByMecanicienId( Long mecanicienId);
+    List<InterventionResponse> recupererHistoriqueComplet();
 }

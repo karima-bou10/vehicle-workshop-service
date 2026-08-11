@@ -23,4 +23,6 @@ public class HistoriqueInterventionController {
             @PathVariable Long id) {
         return historiqueInterventionService.getHistoriqueIntervention(id);
     }
+
+
 }
