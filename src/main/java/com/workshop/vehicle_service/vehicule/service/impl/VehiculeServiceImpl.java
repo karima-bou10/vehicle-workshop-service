@@ -1,7 +1,6 @@
 package com.workshop.vehicle_service.vehicule.service.impl;
 
 import com.workshop.vehicle_service.common.ResourceNotFoundException;
-import com.workshop.vehicle_service.intervention.api.InterventionQuery;
 import com.workshop.vehicle_service.vehicule.dto.VehiculeRequest;
 import com.workshop.vehicle_service.vehicule.dto.VehiculeResponse;
 import com.workshop.vehicle_service.vehicule.entity.Vehicule;
@@ -25,8 +24,6 @@ public class VehiculeServiceImpl implements VehiculeService {
 
     private final VehiculeRepository vehiculeRepository;
     private final VehiculeMapper vehiculeMapper;
-
-    private final InterventionQuery interventionQuery;
 
 /**
      * Récupère la liste paginée de tous les véhicules.
@@ -86,11 +83,10 @@ public class VehiculeServiceImpl implements VehiculeService {
 
     @Override
     public Void deleteVehicule(Long id) {
-        if(!vehiculeRepository.existsById(id)){
-            throw  new ResourceNotFoundException("Véhicule introuvable avec l'id"+id);
-        }
+        Vehicule vehicule = vehiculeRepository.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException("Véhicule introuvable avec l'id" + id));
 
-        if (!interventionQuery.listInterventionsByVehiculeId(id).isEmpty()) {
+        if (!vehicule.getInterventions().isEmpty()) {
             throw new RuntimeException("Suppression impossible : le véhicule est déjà associé à des interventions existantes.");
         }
 

@@ -2,8 +2,6 @@ package com.workshop.vehicle_service.intervention.service.Imp;
 
 import com.workshop.vehicle_service.intervention.Repository.InterventionRepository;
 import com.workshop.vehicle_service.intervention.dtos.*;
-import com.workshop.vehicle_service.intervention.api.InterventionQuery;
-import com.workshop.vehicle_service.intervention.dtos.InterventionRequest;
 import com.workshop.vehicle_service.intervention.dtos.InterventionResponse;
 import com.workshop.vehicle_service.intervention.entity.Intervention;
 import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
@@ -24,7 +22,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class interventionServiceImpl implements InterventionService, InterventionQuery  {
+public class interventionServiceImpl implements InterventionService {
 
 
     private final InterventionRepository interventionRepository;
