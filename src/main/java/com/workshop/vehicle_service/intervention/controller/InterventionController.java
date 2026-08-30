@@ -36,6 +36,11 @@ public class InterventionController {
         return interventionService.listInterventionsByVehiculeId(vehiculeId);
     }
 
+    @GetMapping("/mecaniciens/{mecanicienId}/interventions")
+    public List<InterventionResponse> listInterventionsByMecanicienId(@PathVariable Long mecanicienId) {
+        return interventionService.listInterventionsByMecanicienId(mecanicienId);
+    }
+
 
     /**
      * Récupérer une intervention par son ID
@@ -48,13 +53,11 @@ public class InterventionController {
     /**
      * Enregistrer une nouvelle intervention
      */
-    @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @PostMapping("/new")
     public InterventionResponse enregistrerUneIntervention(
             @RequestBody InterventionCreationRequest interventionRequest) {
         return interventionService.enregistrerUneIntervention(interventionRequest);
     }
-
 
     @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @PutMapping("/{id}/affecter")
@@ -71,10 +74,11 @@ public class InterventionController {
     @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
     @PutMapping("/{id}/edit")
     public InterventionResponse modifierUneIntervention(
-            @PathVariable Long idIntervention,
-            @RequestBody InterventionUpdateRequest request) {
+            @PathVariable Long id,
+            @RequestBody InterventionUpdateRequest request) throws BusinessException {
 
-        return interventionService.modifierUneIntervention(request, idIntervention);
+        return interventionService.modifierUneIntervention(request, id);
+
     }
 
 
@@ -96,7 +100,7 @@ public class InterventionController {
     @PutMapping("/{id}/diagnostic")
     public InterventionResponse ajouterDiagnostic(
             @PathVariable Long id,
-            @RequestBody DiagnosticRequest request) {
+            @RequestBody DiagnosticRequest request) throws BusinessException {
 
         return interventionService.ajouterDiagnostic(id, request);
     }
@@ -121,7 +125,6 @@ public class InterventionController {
               interventionService.changerStatut(id, request);
         return ResponseEntity.ok(interventionResponse);
     }
-
 }
 
 

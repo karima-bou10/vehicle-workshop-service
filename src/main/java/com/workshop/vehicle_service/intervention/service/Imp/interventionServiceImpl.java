@@ -65,25 +65,30 @@ public class interventionServiceImpl implements InterventionService {
     /**
      * Modifie une intervention existante.
      *
-     * @param interventionUpdateRequest l'objet InterventionRequest contenant les nouvelles informations de l'intervention
+     * @param "é"é&interventionUpdateRequest l'objet InterventionRequest contenant les nouvelles informations de l'intervention
      * @return un objet InterventionResponse représentant l'intervention modifiée
      * @throws RuntimeException si l'intervention, le véhicule ou le mécanicien n'est pas trouvé
      */
 
     @Override
-    public InterventionResponse modifierUneIntervention(InterventionUpdateRequest interventionUpdateRequest, Long idIntervention) {
-        Intervention intervention =
-                interventionRepository.findById(idIntervention)
-                        .orElseThrow(() ->
-                                new RuntimeException("Intervention introuvable"));
+    public InterventionResponse modifierUneIntervention(
+            InterventionUpdateRequest request,
+            Long idIntervention) throws BusinessException {
 
+        Intervention intervention = interventionRepository.findById(idIntervention)
+                .orElseThrow(() -> new RuntimeException("Intervention introuvable"));
+        // Vérification du statut
+        if (intervention.getStatut() != StatutIntervention.RECUE
+                && intervention.getStatut() != StatutIntervention.DIAGNOSTIC_EN_COURS) {
+            throw new BusinessException(
+                    "La modification n'est autorisée que pour les interventions en statut RECUE ou DIAGNOSTIC_EN_COURS.");
+        }
 
-        interventionMapper.updateEntity(interventionUpdateRequest, intervention);
+        interventionMapper.updateEntity(request, intervention);
 
+        intervention = interventionRepository.save(intervention);
 
-        return interventionMapper.toResponse(
-                interventionRepository.save(intervention)
-        );
+        return interventionMapper.toResponse(intervention);
     }
 
     @Override
@@ -129,7 +134,7 @@ public class interventionServiceImpl implements InterventionService {
         intervention = interventionRepository.save(intervention);
 
         // Génération de la référence
-        intervention.setRéférence(
+        intervention.setReference(
                 "INT-" +
                         Year.now().getValue() +
                         "-" +
@@ -170,13 +175,11 @@ public class interventionServiceImpl implements InterventionService {
                 .orElseThrow(() ->
                         new RuntimeException("Mécanicien introuvable"));
 
-
         if (!mecanicien.isDisponible()) {
             throw new RuntimeException(
                     "Le mécanicien n'est pas disponible"
             );
         }
-
         if (
                 (intervention.getStatut() == StatutIntervention.EN_REPARATION) ||
                         (intervention.getStatut() == StatutIntervention.TERMINEE) ||
@@ -190,42 +193,56 @@ public class interventionServiceImpl implements InterventionService {
 
 
         intervention.setMecanicien(mecanicien);
-
-
         Intervention saved = interventionRepository.save(intervention);
 
 
+        mecanicien.setDisponible(false);
+        mecanicienRepository.save(mecanicien);
         return interventionMapper.toResponse(saved);
     }
 
     @Override
-    public InterventionResponse ajouterDiagnostic(Long interventionId, DiagnosticRequest request) {
-        Intervention intervention =
-                interventionRepository.findById(interventionId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Intervention introuvable"
-                                ));
+    public InterventionResponse ajouterDiagnostic(Long interventionId, DiagnosticRequest request) throws BusinessException {
 
+        Intervention intervention = interventionRepository.findById(interventionId)
+                .orElseThrow(() ->
+                        new RuntimeException("Intervention introuvable"));
 
-        intervention.setDiagnostic(
-                request.diagnostic()
-        );
+        // Si l'intervention est reçue, on ajoute le diagnostic
+        // puis on passe automatiquement au statut DIAGNOSTIC_EN_COURS
+        if (intervention.getStatut() == StatutIntervention.RECUE) {
 
+            intervention.setDiagnostic(request.diagnostic());
 
-        ChangementStatutRequest changementStatutRequest = new ChangementStatutRequest(
-                StatutIntervention.DIAGNOSTIC_EN_COURS,"Diagnostic renseigné"
-        );
+            ChangementStatutRequest changementStatutRequest =
+                    new ChangementStatutRequest(
+                            StatutIntervention.DIAGNOSTIC_EN_COURS,
+                            "Diagnostic renseigné"
+                    );
 
-        statutInterventionService.changerStatutIntervention(
-                intervention,
-              changementStatutRequest
-        );
+            statutInterventionService.changerStatutIntervention(
+                    intervention,
+                    changementStatutRequest
+            );
 
+        }
+        // Si le diagnostic est déjà en cours,
+        // on autorise simplement sa modification
+        else if (intervention.getStatut() == StatutIntervention.DIAGNOSTIC_EN_COURS) {
 
-        return interventionMapper.toResponse(
-                interventionRepository.save(intervention)
-        );
+            intervention.setDiagnostic(request.diagnostic());
+
+        }
+        // Tous les autres statuts sont interdits
+        else {
+            throw new BusinessException(
+                    "Le diagnostic ne peut plus être ajouté ou modifié."
+            );
+        }
+
+        intervention = interventionRepository.save(intervention);
+
+        return interventionMapper.toResponse(intervention);
     }
 
     @Override
@@ -298,6 +315,18 @@ public class interventionServiceImpl implements InterventionService {
     public List<InterventionResponse> listInterventionsByVehiculeId(Long vehiculeId) {
         return interventionMapper.toResponseList(
                 interventionRepository.getInterventionByVehiculeId(vehiculeId)
+        );
+    }
+
+    /**
+     * Récupère la liste des interventions par id mecanicien
+     * @param mecanicienId
+     * @return une liste d'objets InterventionResponse représentant les interventions d'un mecanicien
+     */
+    @Override
+    public List<InterventionResponse> listInterventionsByMecanicienId(Long mecanicienId) {
+        return interventionMapper.toResponseList(
+                interventionRepository.getInterventionByMecanicienId(mecanicienId)
         );
     }
 }

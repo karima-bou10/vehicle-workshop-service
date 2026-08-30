@@ -26,17 +26,18 @@ public interface InterventionService {
 
     InterventionResponse recupererUneIntervention(Long idIntervention);
 
-    InterventionResponse modifierUneIntervention(InterventionUpdateRequest interventionUpdateRequest, Long idIntervention);
+    InterventionResponse modifierUneIntervention(InterventionUpdateRequest interventionUpdateRequest, Long idIntervention) throws BusinessException;
 
     InterventionResponse enregistrerUneIntervention(InterventionCreationRequest interventionRequest);
 
     InterventionResponse supprimerUneIntervention(Long idIntervention);
 
     InterventionResponse affectationMecanicienIntervention(Long interventionId, AffectationMecanicienRequest request) throws BusinessException;
-    InterventionResponse ajouterDiagnostic(Long interventionId, DiagnosticRequest request);
+    InterventionResponse ajouterDiagnostic(Long interventionId, DiagnosticRequest request) throws BusinessException;
     InterventionResponse ajouterDevis(Long interventionId, DevisRequest request);
 
 
     InterventionResponse changerStatut(Long id, @Valid ChangementStatutRequest request);
     List<InterventionResponse> listInterventionsByVehiculeId( Long vehiculeId);
+    List<InterventionResponse> listInterventionsByMecanicienId( Long mecanicienId);
 }
