@@ -86,10 +86,15 @@ public class InterventionController {
      * Supprimer une intervention
      */
     @PreAuthorize("hasAnyRole('ROLE_MANAGER')")
-    @DeleteMapping("/id")
+
+    @DeleteMapping("/{id}")
+
     public InterventionResponse supprimerUneIntervention(
-            @PathVariable Long idIntervention) {
-        return interventionService.supprimerUneIntervention(idIntervention);
+
+    @PathVariable Long id) {
+
+        return interventionService.supprimerUneIntervention(id);
+
     }
 
 
@@ -124,6 +129,22 @@ public class InterventionController {
       InterventionResponse interventionResponse =
               interventionService.changerStatut(id, request);
         return ResponseEntity.ok(interventionResponse);
+    }
+
+    @PermitAll
+    @GetMapping("/historique")
+    public List<InterventionResponse> recupererHistoriqueInterventions() {
+        return interventionService.recupererHistoriqueComplet();
+    }
+
+
+
+    @GetMapping("/retards")
+
+    public List<InterventionResponse> getInterventionsEnRetard() {
+
+        return interventionService.getInterventionsRestitueEnRetard();
+
     }
 }
 

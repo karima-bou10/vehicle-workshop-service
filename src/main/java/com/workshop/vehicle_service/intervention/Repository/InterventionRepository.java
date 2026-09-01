@@ -15,9 +15,26 @@ public interface InterventionRepository extends JpaRepository<Intervention, Long
     List<Intervention> getInterventionByVehiculeId(Long vehiculeId);
     List<Intervention> getInterventionByVehiculeIdAndStatutIn(Long vehiculeId, List<StatutIntervention> statuts);
 
-    long countByDateRestitutionPrevueBeforeAndStatutIsNot(LocalDateTime date, StatutIntervention statut);
+    long countByDateRestitutionPrevueBeforeAndStatutIsNotIn(LocalDateTime date, List<StatutIntervention> statut);
     List<Intervention> findByDateRestitutionPrevueBeforeAndStatutIsNot(LocalDateTime maintenant, StatutIntervention statut);
 
+    List<Intervention> findByDeletedFalse();
+    List<Intervention> findByDeletedTrue();
     List<Intervention> getInterventionByMecanicienId(Long mecanicienId);
+
+    @Query("""
+    SELECT i
+    FROM Intervention i
+    WHERE i.deleted = false
+      AND i.dateRestitutionPrevue < CURRENT_TIMESTAMP
+      AND i.statut NOT IN (
+            com.workshop.vehicle_service.intervention.enums.StatutIntervention.RESTITUEE,
+            com.workshop.vehicle_service.intervention.enums.StatutIntervention.ANNULEE
+      )
+""")
+    List<Intervention> findInterventionsEnRetard();
+
+
 }
+
 

@@ -39,9 +39,15 @@ public class interventionServiceImpl implements InterventionService {
     @Override
     public List<InterventionResponse> recupererListInterventions() {
 
-        return interventionMapper.toResponseList(
-                interventionRepository.findAll()
-        );
+        List<Intervention> interventions =
+
+        interventionRepository.findByDeletedFalse();
+
+        return interventions.stream()
+
+                .map(interventionMapper::toResponse)
+
+                .toList();
 
     }
 
@@ -151,6 +157,10 @@ public class interventionServiceImpl implements InterventionService {
         Intervention intervention = interventionRepository.findById(idIntervention)
                 .orElseThrow(() ->
                         new RuntimeException("Intervention introuvable"));
+
+        intervention.setDeleted(true);
+
+        interventionRepository.save(intervention);
 
         InterventionResponse response =
                 interventionMapper.toResponse(intervention);
@@ -328,5 +338,30 @@ public class interventionServiceImpl implements InterventionService {
         return interventionMapper.toResponseList(
                 interventionRepository.getInterventionByMecanicienId(mecanicienId)
         );
+    }
+
+    @Override
+    public List<InterventionResponse> recupererHistoriqueComplet() {
+
+        List<Intervention> interventions =
+
+                interventionRepository.findAll();
+
+        return interventions.stream()
+
+                .map(interventionMapper::toResponse)
+
+                .toList();
+
+    }
+
+    public List<InterventionResponse> getInterventionsRestitueEnRetard() {
+
+        List<Intervention> interventions =
+                interventionRepository.findInterventionsEnRetard();
+
+        return interventions.stream()
+                .map(interventionMapper::toResponse)
+                .toList();
     }
 }

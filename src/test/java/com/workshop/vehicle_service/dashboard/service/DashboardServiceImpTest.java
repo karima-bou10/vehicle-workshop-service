@@ -59,9 +59,9 @@ public class DashboardServiceImpTest {
             when(i3.statut()).thenReturn(StatutIntervention.TERMINEE);
 
             when(interventionService.recupererListInterventions()).thenReturn(List.of(i1, i2, i3));
-            when(interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNot(
-                    any(LocalDateTime.class), eq(StatutIntervention.RESTITUEE)))
-                    .thenReturn(1L);
+            when(interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
+                    any(LocalDateTime.class), List.of(StatutIntervention.RESTITUEE))).thenReturn(1L);
+
 
             // When
             DashboardResumeDto result = dashboardService.calculerResumeGlobal();
@@ -77,15 +77,15 @@ public class DashboardServiceImpTest {
 
             verify(interventionService, times(1)).recupererListInterventions();
             verify(interventionRepository, times(1))
-                    .countByDateRestitutionPrevueBeforeAndStatutIsNot(any(LocalDateTime.class), eq(StatutIntervention.RESTITUEE));
+                    .countByDateRestitutionPrevueBeforeAndStatutIsNotIn(any(LocalDateTime.class), List.of(StatutIntervention.RESTITUEE));
         }
 
         @Test
         void calculerResumeGlobal_ListeVide() {
             // Given
             when(interventionService.recupererListInterventions()).thenReturn(Collections.emptyList());
-            when(interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNot(
-                    any(LocalDateTime.class), eq(StatutIntervention.RESTITUEE)))
+            when(interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
+                    any(LocalDateTime.class), List.of(StatutIntervention.RESTITUEE)))
                     .thenReturn(0L);
 
             // When
@@ -108,8 +108,8 @@ public class DashboardServiceImpTest {
             when(i1.statut()).thenReturn(StatutIntervention.DIAGNOSTIC_EN_COURS);
 
             when(interventionService.recupererListInterventions()).thenReturn(List.of(i1));
-            when(interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNot(
-                    any(LocalDateTime.class), eq(StatutIntervention.RESTITUEE)))
+            when(interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
+                    any(LocalDateTime.class),List.of(StatutIntervention.RESTITUEE)))
                     .thenReturn(0L);
 
             // When

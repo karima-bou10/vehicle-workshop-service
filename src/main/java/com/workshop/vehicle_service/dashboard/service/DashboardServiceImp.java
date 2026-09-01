@@ -7,6 +7,7 @@ import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import com.workshop.vehicle_service.intervention.service.InterventionService;
 import com.workshop.vehicle_service.mecanicien.dto.MecanicienResponse;
 import com.workshop.vehicle_service.mecanicien.service.MecanicienService;
+import jakarta.validation.constraints.Max;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -46,8 +47,8 @@ public class DashboardServiceImp implements DashboardService {
                 .filter(i -> StatutIntervention.TERMINEE.equals(i.statut()))
                 .count();
 
-        long retardsRestitution = interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNot(
-                LocalDateTime.now(), StatutIntervention.RESTITUEE);
+        long retardsRestitution = interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
+                LocalDateTime.now(),List.of(StatutIntervention.RESTITUEE, StatutIntervention.ANNULEE));
 
         // Regroupement par statut
         Map<StatutIntervention, Long> compteurs = toutesLesInterventions.stream()
