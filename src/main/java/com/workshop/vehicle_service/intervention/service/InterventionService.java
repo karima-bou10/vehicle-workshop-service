@@ -43,4 +43,7 @@ public interface InterventionService {
     List<InterventionResponse> recupererHistoriqueComplet();
 
     List<InterventionResponse>  getInterventionsRestitueEnRetard();
+
+    List<InterventionResponse> rechercherInterventions(
+            InterventionSearchRequest request);
 }

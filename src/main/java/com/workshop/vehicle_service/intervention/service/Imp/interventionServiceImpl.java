@@ -8,6 +8,7 @@ import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import com.workshop.vehicle_service.intervention.mapper.InterventionMapper;
 import com.workshop.vehicle_service.intervention.service.InterventionService;
 import com.workshop.vehicle_service.intervention.service.StatutInterventionService;
+import com.workshop.vehicle_service.intervention.specification.InterventionSpecification;
 import com.workshop.vehicle_service.mecanicien.entity.Mecanicien;
 import com.workshop.vehicle_service.mecanicien.repository.MecanicienRepository;
 import com.workshop.vehicle_service.vehicule.entity.Vehicule;
@@ -175,39 +176,66 @@ public class interventionServiceImpl implements InterventionService {
             Long interventionId,
             AffectationMecanicienRequest request) throws BusinessException {
 
-
+        // 1. Récupérer l'intervention
         Intervention intervention = interventionRepository.findById(interventionId)
                 .orElseThrow(() ->
                         new RuntimeException("Intervention introuvable"));
 
+        // 2. Vérifier le statut de l'intervention
+        if (
+                intervention.getStatut() == StatutIntervention.EN_REPARATION ||
+                        intervention.getStatut() == StatutIntervention.TERMINEE ||
+                        intervention.getStatut() == StatutIntervention.RESTITUEE ||
+                        intervention.getStatut() == StatutIntervention.ANNULEE
+        ) {
+            throw new BusinessException(
+                    "Impossible de modifier l'affectation à ce stade de l'intervention"
+            );
+        }
 
-        Mecanicien mecanicien = mecanicienRepository.findById(request.mecanicienId())
+        // 3. Récupérer le nouveau mécanicien
+        Mecanicien nouveauMecanicien = mecanicienRepository
+                .findById(request.mecanicienId())
                 .orElseThrow(() ->
                         new RuntimeException("Mécanicien introuvable"));
 
-        if (!mecanicien.isDisponible()) {
-            throw new RuntimeException(
+        // 4. Vérifier la disponibilité du nouveau mécanicien
+        // Si c'est le même mécanicien déjà affecté, il est accepté
+        boolean memeMecanicien =
+                intervention.getMecanicien() != null &&
+                        intervention.getMecanicien()
+                                .getId()
+                                .equals(nouveauMecanicien.getId());
+
+        if (!memeMecanicien && !nouveauMecanicien.isDisponible()) {
+            throw new BusinessException(
                     "Le mécanicien n'est pas disponible"
             );
         }
-        if (
-                (intervention.getStatut() == StatutIntervention.EN_REPARATION) ||
-                        (intervention.getStatut() == StatutIntervention.TERMINEE) ||
-                        (intervention.getStatut() == StatutIntervention.RESTITUEE) ||
-                        (intervention.getStatut() == StatutIntervention.ANNULEE)
-        ) {
-            throw new BusinessException(
-                    "Impossible d'affecter un mécanicien à cette intervention"
-            );
+
+        // 5. Si un ancien mécanicien est affecté et qu'on le change,
+        //    rendre l'ancien mécanicien disponible
+        if (intervention.getMecanicien() != null && !memeMecanicien) {
+
+            Mecanicien ancienMecanicien = intervention.getMecanicien();
+
+            ancienMecanicien.setDisponible(true);
+            mecanicienRepository.save(ancienMecanicien);
         }
 
+        // 6. Affecter le nouveau mécanicien
+        intervention.setMecanicien(nouveauMecanicien);
 
-        intervention.setMecanicien(mecanicien);
+        // 7. Le nouveau mécanicien devient indisponible
+        if (!memeMecanicien) {
+            nouveauMecanicien.setDisponible(false);
+            mecanicienRepository.save(nouveauMecanicien);
+        }
+
+        // 8. Sauvegarder l'intervention
         Intervention saved = interventionRepository.save(intervention);
 
-
-        mecanicien.setDisponible(false);
-        mecanicienRepository.save(mecanicien);
+        // 9. Retourner la réponse
         return interventionMapper.toResponse(saved);
     }
 
@@ -260,41 +288,44 @@ public class interventionServiceImpl implements InterventionService {
             Long interventionId,
             DevisRequest request) {
 
+        Intervention intervention = interventionRepository.findById(interventionId)
+                .orElseThrow(() ->
+                        new RuntimeException("Intervention introuvable"));
 
-        Intervention intervention =
-                interventionRepository.findById(interventionId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Intervention introuvable"
-                                ));
-
-
-        if(intervention.getDiagnostic() == null
+        if (intervention.getDiagnostic() == null
                 || intervention.getDiagnostic().isBlank()) {
-
             throw new RuntimeException(
-                    "Le diagnostic est obligatoire avant le devis"
-            );
+                    "Le diagnostic est obligatoire avant le devis");
         }
 
+        // Devis déjà existant
+        if (intervention.getCoutEstime() != null) {
 
-        intervention.setCoutEstime(
-                request.coutEstime()
-        );
+            // Autoriser uniquement la modification d'un devis en attente
+            if (intervention.getStatut() != StatutIntervention.DEVIS_A_VALIDER) {
+                throw new RuntimeException(
+                        "Le devis ne peut plus être modifié");
+            }
 
+            intervention.setCoutEstime(request.coutEstime());
 
-        ChangementStatutRequest changementStatutRequest = new ChangementStatutRequest(
-                StatutIntervention.DEVIS_A_VALIDER,"Devis créé"
-        );
+            return interventionMapper.toResponse(
+                    interventionRepository.save(intervention));
+        }
+
+        // Création du devis
+        intervention.setCoutEstime(request.coutEstime());
+
         statutInterventionService.changerStatutIntervention(
                 intervention,
-            changementStatutRequest
+                new ChangementStatutRequest(
+                        StatutIntervention.DEVIS_A_VALIDER,
+                        "Devis créé"
+                )
         );
-
 
         return interventionMapper.toResponse(
-                interventionRepository.save(intervention)
-        );
+                interventionRepository.save(intervention));
     }
 
     @Override
@@ -359,6 +390,27 @@ public class interventionServiceImpl implements InterventionService {
 
         List<Intervention> interventions =
                 interventionRepository.findInterventionsEnRetard();
+
+        return interventions.stream()
+                .map(interventionMapper::toResponse)
+                .toList();
+    }
+    @Override
+    public List<InterventionResponse> rechercherInterventions(
+            InterventionSearchRequest request) {
+
+        var specification = InterventionSpecification.withFilters(
+                request.reference(),
+                request.immatriculation(),
+                request.statut(),
+                request.priorite(),
+                request.typeIntervention(),
+                request.vehiculeId(),
+                request.mecanicienId()
+        );
+
+        List<Intervention> interventions =
+                interventionRepository.findAll(specification);
 
         return interventions.stream()
                 .map(interventionMapper::toResponse)

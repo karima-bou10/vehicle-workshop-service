@@ -45,6 +45,7 @@ public class DashboardServiceImpTest {
 
         @Test
         void calculerResumeGlobal_CasNominal() {
+
             // Given
             InterventionResponse i1 = mock(InterventionResponse.class);
             when(i1.dateDepot()).thenReturn(LocalDateTime.now());
@@ -58,10 +59,14 @@ public class DashboardServiceImpTest {
             when(i3.dateDepot()).thenReturn(LocalDateTime.now().minusDays(2));
             when(i3.statut()).thenReturn(StatutIntervention.TERMINEE);
 
-            when(interventionService.recupererListInterventions()).thenReturn(List.of(i1, i2, i3));
-            when(interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
-                    any(LocalDateTime.class), List.of(StatutIntervention.RESTITUEE))).thenReturn(1L);
+            when(interventionService.recupererListInterventions())
+                    .thenReturn(List.of(i1, i2, i3));
 
+            when(interventionRepository
+                    .countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
+                            any(LocalDateTime.class),
+                            anyList()))
+                    .thenReturn(1L);
 
             // When
             DashboardResumeDto result = dashboardService.calculerResumeGlobal();
@@ -75,41 +80,65 @@ public class DashboardServiceImpTest {
             assertThat(result.retardsRestitution()).isEqualTo(1);
             assertThat(result.repartitionStatuts()).hasSize(3);
 
-            verify(interventionService, times(1)).recupererListInterventions();
-            verify(interventionRepository, times(1))
-                    .countByDateRestitutionPrevueBeforeAndStatutIsNotIn(any(LocalDateTime.class), List.of(StatutIntervention.RESTITUEE));
+            verify(interventionService).recupererListInterventions();
+
+            verify(interventionRepository)
+                    .countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
+                            any(LocalDateTime.class),
+                            anyList());
         }
+
 
         @Test
         void calculerResumeGlobal_ListeVide() {
+
             // Given
-            when(interventionService.recupererListInterventions()).thenReturn(Collections.emptyList());
-            when(interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
-                    any(LocalDateTime.class), List.of(StatutIntervention.RESTITUEE)))
+            when(interventionService.recupererListInterventions())
+                    .thenReturn(Collections.emptyList());
+
+            when(interventionRepository
+                    .countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
+                            any(LocalDateTime.class),
+                            anyList()))
                     .thenReturn(0L);
 
             // When
             DashboardResumeDto result = dashboardService.calculerResumeGlobal();
 
             // Then
+            assertThat(result).isNotNull();
             assertThat(result.recuesAujourdhui()).isZero();
             assertThat(result.enDiagnostic()).isZero();
             assertThat(result.enReparation()).isZero();
             assertThat(result.terminees()).isZero();
             assertThat(result.retardsRestitution()).isZero();
             assertThat(result.repartitionStatuts()).isEmpty();
+
+            verify(interventionService).recupererListInterventions();
+
+            verify(interventionRepository)
+                    .countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
+                            any(LocalDateTime.class),
+                            anyList());
         }
 
         @Test
         void calculerResumeGlobal_DateDepotNull() {
+
             // Given
             InterventionResponse i1 = mock(InterventionResponse.class);
-            when(i1.dateDepot()).thenReturn(null);
-            when(i1.statut()).thenReturn(StatutIntervention.DIAGNOSTIC_EN_COURS);
 
-            when(interventionService.recupererListInterventions()).thenReturn(List.of(i1));
-            when(interventionRepository.countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
-                    any(LocalDateTime.class),List.of(StatutIntervention.RESTITUEE)))
+            when(i1.dateDepot()).thenReturn(null);
+            when(i1.statut())
+                    .thenReturn(StatutIntervention.DIAGNOSTIC_EN_COURS);
+
+            when(interventionService.recupererListInterventions())
+                    .thenReturn(List.of(i1));
+
+            when(interventionRepository
+                    .countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
+                            any(LocalDateTime.class),
+                            anyList()))
                     .thenReturn(0L);
 
             // When
@@ -119,6 +148,11 @@ public class DashboardServiceImpTest {
             assertThat(result.recuesAujourdhui()).isZero();
             assertThat(result.enDiagnostic()).isEqualTo(1);
             assertThat(result.repartitionStatuts()).hasSize(1);
+
+            verify(interventionRepository)
+                    .countByDateRestitutionPrevueBeforeAndStatutIsNotIn(
+                            any(LocalDateTime.class),
+                            anyList());
         }
     }
 
