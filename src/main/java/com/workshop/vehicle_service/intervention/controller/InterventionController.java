@@ -1,6 +1,9 @@
 package com.workshop.vehicle_service.intervention.controller;
 
 import com.workshop.vehicle_service.intervention.dtos.*;
+import com.workshop.vehicle_service.intervention.enums.Priorite;
+import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
+import com.workshop.vehicle_service.intervention.enums.TypeIntervention;
 import com.workshop.vehicle_service.intervention.service.Imp.BusinessException;
 import com.workshop.vehicle_service.intervention.service.InterventionService;
 import com.workshop.vehicle_service.intervention.service.StatutInterventionService;
@@ -29,6 +32,29 @@ public class InterventionController {
     @GetMapping
     public List<InterventionResponse> recupererListInterventions() {
         return interventionService.recupererListInterventions();
+    }
+
+    @GetMapping("/search")
+    public List<InterventionResponse> rechercherInterventions(
+            @RequestParam(required = false) String reference,
+            @RequestParam(required = false) String immatriculation,
+            @RequestParam(required = false) StatutIntervention statut,
+            @RequestParam(required = false) Priorite priorite,
+            @RequestParam(required = false) TypeIntervention typeIntervention,
+            @RequestParam(required = false) Long vehiculeId,
+            @RequestParam(required = false) Long mecanicienId) {
+
+        InterventionSearchRequest request = new InterventionSearchRequest(
+                reference,
+                immatriculation,
+                statut,
+                priorite,
+                typeIntervention,
+                vehiculeId,
+                mecanicienId
+        );
+
+        return interventionService.rechercherInterventions(request);
     }
 
     @GetMapping("/vehicules/{vehiculeId}/interventions")

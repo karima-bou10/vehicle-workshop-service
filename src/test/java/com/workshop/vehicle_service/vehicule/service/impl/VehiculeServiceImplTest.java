@@ -1,7 +1,6 @@
 package com.workshop.vehicle_service.vehicule.service.impl;
 
 import com.workshop.vehicle_service.common.ResourceNotFoundException;
-import com.workshop.vehicle_service.intervention.api.InterventionQuery;
 import com.workshop.vehicle_service.vehicule.dto.VehiculeRequest;
 import com.workshop.vehicle_service.vehicule.dto.VehiculeResponse;
 import com.workshop.vehicle_service.vehicule.entity.Vehicule;
@@ -38,9 +37,6 @@ class VehiculeServiceImplTest {
 
     @Mock
     private VehiculeMapper vehiculeMapper;
-
-    @Mock
-    private InterventionQuery interventionQuery;
 
     @InjectMocks
     private VehiculeServiceImpl vehiculeService;
@@ -312,78 +308,112 @@ class VehiculeServiceImplTest {
     @Test
     @DisplayName("Supprimer un véhicule - Success")
     void testDeleteVehicule_Success() {
-        
-        when(vehiculeRepository.existsById(vehiculeId)).thenReturn(true);
-        when(interventionQuery.listInterventionsByVehiculeId(vehiculeId)).thenReturn(List.of());
-        doNothing().when(vehiculeRepository).deleteById(vehiculeId);
 
-        
+        vehicule.setInterventions(new ArrayList<>());
+
+        when(vehiculeRepository.findById(vehiculeId))
+                .thenReturn(Optional.of(vehicule));
+
         Void result = vehiculeService.deleteVehicule(vehiculeId);
 
-        
         assertNull(result);
-        verify(vehiculeRepository, times(1)).existsById(vehiculeId);
-        verify(interventionQuery, times(1)).listInterventionsByVehiculeId(vehiculeId);
-        verify(vehiculeRepository, times(1)).deleteById(vehiculeId);
+
+        verify(vehiculeRepository, times(1))
+                .findById(vehiculeId);
+
+        verify(vehiculeRepository, times(1))
+                .deleteById(vehiculeId);
     }
 
     @Test
     @DisplayName("Supprimer un véhicule - Non trouvé")
     void testDeleteVehicule_NotFound() {
-        
-        when(vehiculeRepository.existsById(vehiculeId)).thenReturn(false);
 
-         
-        assertThrows(ResourceNotFoundException.class, () -> vehiculeService.deleteVehicule(vehiculeId));
-        verify(vehiculeRepository, times(1)).existsById(vehiculeId);
-        verify(vehiculeRepository, never()).deleteById(anyLong());
+        when(vehiculeRepository.findById(vehiculeId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> vehiculeService.deleteVehicule(vehiculeId)
+        );
+
+        verify(vehiculeRepository, times(1))
+                .findById(vehiculeId);
+
+        verify(vehiculeRepository, never())
+                .deleteById(anyLong());
     }
 
     @Test
     @DisplayName("Supprimer un véhicule - ID invalide")
     void testDeleteVehicule_WithInvalidId() {
-        
-        Long invalidId = -1L;
-        when(vehiculeRepository.existsById(invalidId)).thenReturn(false);
 
-         
-        assertThrows(ResourceNotFoundException.class, () -> vehiculeService.deleteVehicule(invalidId));
-        verify(vehiculeRepository, times(1)).existsById(invalidId);
-        verify(vehiculeRepository, never()).deleteById(any());
+        Long invalidId = -1L;
+
+        when(vehiculeRepository.findById(invalidId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> vehiculeService.deleteVehicule(invalidId)
+        );
+
+        verify(vehiculeRepository, times(1))
+                .findById(invalidId);
+
+        verify(vehiculeRepository, never())
+                .deleteById(any());
     }
 
     @Test
     @DisplayName("Supprimer un véhicule - Vérifier que deleteById est appelé")
     void testDeleteVehicule_VerifyDelete() {
-        
-        Long idToDelete = 5L;
-        when(vehiculeRepository.existsById(idToDelete)).thenReturn(true);
-        when(interventionQuery.listInterventionsByVehiculeId(idToDelete)).thenReturn(List.of());
-        doNothing().when(vehiculeRepository).deleteById(idToDelete);
 
-        
+        Long idToDelete = 5L;
+
+        Vehicule vehicule = new Vehicule();
+        vehicule.setId(idToDelete);
+        vehicule.setInterventions(new ArrayList<>());
+
+        when(vehiculeRepository.findById(idToDelete))
+                .thenReturn(Optional.of(vehicule));
+
         vehiculeService.deleteVehicule(idToDelete);
 
-        
-        verify(interventionQuery, times(1)).listInterventionsByVehiculeId(idToDelete);
-        verify(vehiculeRepository, times(1)).deleteById(idToDelete);
-    }
+        verify(vehiculeRepository, times(1))
+                .findById(idToDelete);
 
+        verify(vehiculeRepository, times(1))
+                .deleteById(idToDelete);
+    }
     @Test
     @DisplayName("Supprimer un véhicule - Impossible si des interventions existent")
     void testDeleteVehicule_WithExistingInterventions() {
 
-        when(vehiculeRepository.existsById(vehiculeId)).thenReturn(true);
-        when(interventionQuery.listInterventionsByVehiculeId(vehiculeId))
-                .thenReturn(List.of(mock(com.workshop.vehicle_service.intervention.dtos.InterventionResponse.class)));
+        vehicule.setInterventions(
+                List.of(mock(
+                        com.workshop.vehicle_service.intervention.entity.Intervention.class))
+        );
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> vehiculeService.deleteVehicule(vehiculeId));
+        when(vehiculeRepository.findById(vehiculeId))
+                .thenReturn(Optional.of(vehicule));
 
-        assertEquals("Suppression impossible : le véhicule est déjà associé à des interventions existantes.", exception.getMessage());
-        verify(vehiculeRepository, times(1)).existsById(vehiculeId);
-        verify(interventionQuery, times(1)).listInterventionsByVehiculeId(vehiculeId);
-        verify(vehiculeRepository, never()).deleteById(anyLong());
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> vehiculeService.deleteVehicule(vehiculeId)
+                );
+
+        assertEquals(
+                "Suppression impossible : le véhicule est déjà associé à des interventions existantes.",
+                exception.getMessage()
+        );
+
+        verify(vehiculeRepository, times(1))
+                .findById(vehiculeId);
+
+        verify(vehiculeRepository, never())
+                .deleteById(anyLong());
     }
 
     // ==================== Tests additionnels ====================
@@ -395,7 +425,6 @@ class VehiculeServiceImplTest {
         assertNotNull(vehiculeService);
         assertNotNull(vehiculeRepository);
         assertNotNull(vehiculeMapper);
-        assertNotNull(interventionQuery);
     }
 }
 

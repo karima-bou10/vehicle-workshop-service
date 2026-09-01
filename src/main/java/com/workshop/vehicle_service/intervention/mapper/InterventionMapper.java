@@ -24,6 +24,7 @@ public interface InterventionMapper {
     @Mapping(source = "vehicule.id", target = "vehiculeId")
     @Mapping(source = "mecanicien.id", target = "mecanicienId")
     @Mapping(source = "mecanicien.nom", target = "nomMecanicien")
+    @Mapping(source = "mecanicien.prenom", target = "prenomMecanicien")
     InterventionResponse toResponse(Intervention intervention);
 
     List<InterventionResponse> toResponseList(List<Intervention> list);

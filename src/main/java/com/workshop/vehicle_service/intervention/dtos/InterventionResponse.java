@@ -44,6 +44,8 @@ public record InterventionResponse(
 
         String nomMecanicien,
 
+        String prenomMecanicien,
+
         String reference,
 
         Boolean deleted

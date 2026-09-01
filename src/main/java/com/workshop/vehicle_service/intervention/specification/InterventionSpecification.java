@@ -1,0 +1,106 @@
+package com.workshop.vehicle_service.intervention.specification;
+
+import com.workshop.vehicle_service.intervention.entity.Intervention;
+import com.workshop.vehicle_service.intervention.enums.Priorite;
+import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
+import com.workshop.vehicle_service.intervention.enums.TypeIntervention;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import org.springframework.data.jpa.domain.Specification;
+
+public class InterventionSpecification {
+
+    public static Specification<Intervention> withFilters(
+            String reference,
+            String immatriculation,
+            StatutIntervention statut,
+            Priorite priorite,
+            TypeIntervention typeIntervention,
+            Long vehiculeId,
+            Long mecanicienId
+    ) {
+
+        return (root, query, criteriaBuilder) -> {
+
+            var predicates = criteriaBuilder.conjunction();
+
+            // Recherche par référence
+            if (reference != null && !reference.isBlank()) {
+                predicates.getExpressions().add(
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(root.get("reference")),
+                                "%" + reference.toLowerCase() + "%"
+                        )
+                );
+            }
+
+            // Recherche par immatriculation
+            if (immatriculation != null && !immatriculation.isBlank()) {
+
+                Join<Intervention, ?> vehicule =
+                        root.join("vehicule", JoinType.LEFT);
+
+                predicates.getExpressions().add(
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(
+                                        vehicule.get("immatriculationFictive")
+                                ),
+                                "%" + immatriculation.toLowerCase() + "%"
+                        )
+                );
+            }
+
+            // Recherche par statut
+            if (statut != null) {
+                predicates.getExpressions().add(
+                        criteriaBuilder.equal(
+                                root.get("statut"),
+                                statut
+                        )
+                );
+            }
+
+            // Recherche par priorité
+            if (priorite != null) {
+                predicates.getExpressions().add(
+                        criteriaBuilder.equal(
+                                root.get("priorite"),
+                                priorite
+                        )
+                );
+            }
+
+            // Recherche par type d'intervention
+            if (typeIntervention != null) {
+                predicates.getExpressions().add(
+                        criteriaBuilder.equal(
+                                root.get("typeIntervention"),
+                                typeIntervention
+                        )
+                );
+            }
+
+            // Recherche par véhicule
+            if (vehiculeId != null) {
+                predicates.getExpressions().add(
+                        criteriaBuilder.equal(
+                                root.get("vehicule").get("id"),
+                                vehiculeId
+                        )
+                );
+            }
+
+            // Recherche par mécanicien
+            if (mecanicienId != null) {
+                predicates.getExpressions().add(
+                        criteriaBuilder.equal(
+                                root.get("mecanicien").get("id"),
+                                mecanicienId
+                        )
+                );
+            }
+
+            return predicates;
+        };
+    }
+}
