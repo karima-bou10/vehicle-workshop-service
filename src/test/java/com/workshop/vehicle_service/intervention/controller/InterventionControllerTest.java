@@ -4,14 +4,16 @@ import com.workshop.vehicle_service.intervention.dtos.*;
 import com.workshop.vehicle_service.intervention.service.Imp.BusinessException;
 import com.workshop.vehicle_service.intervention.service.InterventionService;
 import com.workshop.vehicle_service.intervention.service.StatutInterventionService;
-import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,14 +33,19 @@ class InterventionControllerTest {
 
     @Test
     void recupererListInterventions_shouldReturnList() {
-        List<InterventionResponse> expected = List.of();
-        when(interventionService.recupererListInterventions()).thenReturn(expected);
+        Pageable pageable = PageRequest.of(0, 10);
 
-        List<InterventionResponse> result =
-                interventionController.recupererListInterventions();
+        Page<InterventionResponse> expected =
+                new PageImpl<>(List.of());
+
+        when(interventionService.recupererListInterventions(pageable))
+                .thenReturn(expected);
+
+        Page<InterventionResponse> result =
+                interventionController.recupererListInterventions(pageable);
 
         assertSame(expected, result);
-        verify(interventionService).recupererListInterventions();
+        verify(interventionService).recupererListInterventions(pageable);
     }
 
     @Test
@@ -147,14 +154,14 @@ class InterventionControllerTest {
         Long id = 1L;
         InterventionResponse expected = mock(InterventionResponse.class);
 
-        when(interventionService.supprimerUneIntervention(id))
+        when(interventionService.archiveUneIntervention(id))
                 .thenReturn(expected);
 
         InterventionResponse result =
-                interventionController.supprimerUneIntervention(id);
+                interventionController.archiverUneUneIntervention(id);
 
         assertSame(expected, result);
-        verify(interventionService).supprimerUneIntervention(id);
+        verify(interventionService).archiveUneIntervention(id);
     }
 
     @Test
@@ -189,29 +196,35 @@ class InterventionControllerTest {
 
     @Test
     void recupererHistoriqueInterventions_shouldReturnList() {
-        List<InterventionResponse> expected = List.of();
-
-        when(interventionService.recupererHistoriqueComplet())
+        Page<InterventionResponse> expected =new PageImpl<>(List.of());
+       Pageable pageable = mock(Pageable.class);
+        when(interventionService.recupererHistoriqueComplet(pageable))
                 .thenReturn(expected);
 
-        List<InterventionResponse> result =
-                interventionController.recupererHistoriqueInterventions();
+        Page<InterventionResponse> result =
+                interventionController.recupererHistoriqueInterventions(pageable);
 
         assertSame(expected, result);
-        verify(interventionService).recupererHistoriqueComplet();
+        verify(interventionService).recupererHistoriqueComplet(pageable);
     }
 
     @Test
-    void getInterventionsEnRetard_shouldReturnList() {
-        List<InterventionResponse> expected = List.of();
+    void getInterventionsEnRetard_shouldReturnPage() {
 
-        when(interventionService.getInterventionsRestitueEnRetard())
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Page<InterventionResponse> expected =
+                new PageImpl<>(List.of());
+
+        when(interventionService.getInterventionsRestitueEnRetard(pageable))
                 .thenReturn(expected);
 
-        List<InterventionResponse> result =
-                interventionController.getInterventionsEnRetard();
+        Page<InterventionResponse> result =
+                interventionController.getInterventionsEnRetard(pageable);
 
         assertSame(expected, result);
-        verify(interventionService).getInterventionsRestitueEnRetard();
+
+        verify(interventionService)
+                .getInterventionsRestitueEnRetard(pageable);
     }
 }

@@ -6,7 +6,11 @@ import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import com.workshop.vehicle_service.intervention.enums.TypeIntervention;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InterventionSpecification {
 
@@ -22,14 +26,22 @@ public class InterventionSpecification {
 
         return (root, query, criteriaBuilder) -> {
 
-            var predicates = criteriaBuilder.conjunction();
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Exclure les interventions archivées
+            predicates.add(
+                    criteriaBuilder.isFalse(root.get("deleted"))
+            );
 
             // Recherche par référence
             if (reference != null && !reference.isBlank()) {
-                predicates.getExpressions().add(
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(root.get("reference")),
-                                "%" + reference.toLowerCase() + "%"
+
+                predicates.add(
+                        criteriaBuilder.equal(
+                                criteriaBuilder.lower(
+                                        root.get("reference")
+                                ),
+                                reference.trim().toLowerCase()
                         )
                 );
             }
@@ -40,19 +52,20 @@ public class InterventionSpecification {
                 Join<Intervention, ?> vehicule =
                         root.join("vehicule", JoinType.LEFT);
 
-                predicates.getExpressions().add(
+                predicates.add(
                         criteriaBuilder.like(
                                 criteriaBuilder.lower(
                                         vehicule.get("immatriculationFictive")
                                 ),
-                                "%" + immatriculation.toLowerCase() + "%"
+                                "%" + immatriculation.trim().toLowerCase() + "%"
                         )
                 );
             }
 
             // Recherche par statut
             if (statut != null) {
-                predicates.getExpressions().add(
+
+                predicates.add(
                         criteriaBuilder.equal(
                                 root.get("statut"),
                                 statut
@@ -62,7 +75,8 @@ public class InterventionSpecification {
 
             // Recherche par priorité
             if (priorite != null) {
-                predicates.getExpressions().add(
+
+                predicates.add(
                         criteriaBuilder.equal(
                                 root.get("priorite"),
                                 priorite
@@ -70,9 +84,10 @@ public class InterventionSpecification {
                 );
             }
 
-            // Recherche par type d'intervention
+            // Recherche par type
             if (typeIntervention != null) {
-                predicates.getExpressions().add(
+
+                predicates.add(
                         criteriaBuilder.equal(
                                 root.get("typeIntervention"),
                                 typeIntervention
@@ -82,7 +97,8 @@ public class InterventionSpecification {
 
             // Recherche par véhicule
             if (vehiculeId != null) {
-                predicates.getExpressions().add(
+
+                predicates.add(
                         criteriaBuilder.equal(
                                 root.get("vehicule").get("id"),
                                 vehiculeId
@@ -92,7 +108,8 @@ public class InterventionSpecification {
 
             // Recherche par mécanicien
             if (mecanicienId != null) {
-                predicates.getExpressions().add(
+
+                predicates.add(
                         criteriaBuilder.equal(
                                 root.get("mecanicien").get("id"),
                                 mecanicienId
@@ -100,7 +117,9 @@ public class InterventionSpecification {
                 );
             }
 
-            return predicates;
+            return criteriaBuilder.and(
+                    predicates.toArray(new Predicate[0])
+            );
         };
     }
 }

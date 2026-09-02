@@ -1,9 +1,10 @@
 package com.workshop.vehicle_service.intervention.service;
 
 import com.workshop.vehicle_service.intervention.dtos.*;
-import com.workshop.vehicle_service.intervention.entity.Intervention;
 import com.workshop.vehicle_service.intervention.service.Imp.BusinessException;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * <h1>Intervention Service</h1>
@@ -22,6 +23,7 @@ import java.util.List;
 
 public interface InterventionService {
 
+    Page<InterventionResponse> recupererListInterventions(Pageable pageable);
     List<InterventionResponse> recupererListInterventions();
 
     InterventionResponse recupererUneIntervention(Long idIntervention);
@@ -30,7 +32,7 @@ public interface InterventionService {
 
     InterventionResponse enregistrerUneIntervention(InterventionCreationRequest interventionRequest);
 
-    InterventionResponse supprimerUneIntervention(Long idIntervention);
+    InterventionResponse archiveUneIntervention(Long idIntervention);
 
     InterventionResponse affectationMecanicienIntervention(Long interventionId, AffectationMecanicienRequest request) throws BusinessException;
     InterventionResponse ajouterDiagnostic(Long interventionId, DiagnosticRequest request) throws BusinessException;
@@ -40,10 +42,10 @@ public interface InterventionService {
     InterventionResponse changerStatut(Long id, @Valid ChangementStatutRequest request);
     List<InterventionResponse> listInterventionsByVehiculeId( Long vehiculeId);
     List<InterventionResponse> listInterventionsByMecanicienId( Long mecanicienId);
-    List<InterventionResponse> recupererHistoriqueComplet();
+    Page<InterventionResponse> recupererHistoriqueComplet(Pageable pageable);
 
-    List<InterventionResponse>  getInterventionsRestitueEnRetard();
+    Page<InterventionResponse>  getInterventionsRestitueEnRetard(Pageable pageable);
 
-    List<InterventionResponse> rechercherInterventions(
-            InterventionSearchRequest request);
+    Page<InterventionResponse> rechercherInterventions(
+            InterventionSearchRequest request,Pageable pageable);
 }
