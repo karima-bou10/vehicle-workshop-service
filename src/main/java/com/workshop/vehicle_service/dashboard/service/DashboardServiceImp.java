@@ -28,6 +28,7 @@ public class DashboardServiceImp implements DashboardService {
 
     @Override
     public DashboardResumeDto calculerResumeGlobal() {
+
         List<InterventionResponse> toutesLesInterventions = interventionService.recupererListInterventions();
         String dateDuJour = LocalDate.now().toString();
 

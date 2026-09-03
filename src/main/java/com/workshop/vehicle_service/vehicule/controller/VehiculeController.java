@@ -50,4 +50,13 @@ public class VehiculeController {
                return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/disponibles-pour-intervention")
+    public ResponseEntity<List<VehiculeResponse>>
+    getVehiculesDisponiblesPourIntervention() {
+
+        return ResponseEntity.ok(
+                vehiculeService.getVehiculesDisponiblesPourIntervention()
+        );
+    }
+
 }

@@ -2,6 +2,9 @@ package com.workshop.vehicle_service.intervention.Repository;
 
 import com.workshop.vehicle_service.intervention.entity.Intervention;
 import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -19,8 +22,8 @@ public interface InterventionRepository extends JpaRepository<Intervention, Long
     long countByDateRestitutionPrevueBeforeAndStatutIsNotIn(LocalDateTime date, List<StatutIntervention> statut);
     List<Intervention> findByDateRestitutionPrevueBeforeAndStatutIsNot(LocalDateTime maintenant, StatutIntervention statut);
 
+    Page<Intervention> findByDeletedFalse(Pageable pageable);
     List<Intervention> findByDeletedFalse();
-    List<Intervention> findByDeletedTrue();
     List<Intervention> getInterventionByMecanicienId(Long mecanicienId);
 
     @Query("""
@@ -33,7 +36,16 @@ public interface InterventionRepository extends JpaRepository<Intervention, Long
             com.workshop.vehicle_service.intervention.enums.StatutIntervention.ANNULEE
       )
 """)
-    List<Intervention> findInterventionsEnRetard();
+    Page<Intervention> findInterventionsEnRetard(Pageable pageable);
+
+
+    Page<Intervention> findAll(Specification<Intervention> specification, Pageable pageable);
+    Page<Intervention> findAll(Pageable pageable);
+
+    boolean existsByVehiculeIdAndDeletedFalseAndStatutNotIn(
+            Long vehiculeId,
+            List<StatutIntervention> statutsFinaux
+    );
 
 
 }

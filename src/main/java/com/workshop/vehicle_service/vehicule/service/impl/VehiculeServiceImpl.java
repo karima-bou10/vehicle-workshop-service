@@ -13,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * Implémentation du service de gestion des véhicules.
  */
@@ -92,5 +94,15 @@ public class VehiculeServiceImpl implements VehiculeService {
 
         vehiculeRepository.deleteById(id);
         return null;
+    }
+
+    @Override
+    public List<VehiculeResponse> getVehiculesDisponiblesPourIntervention() {
+
+        return vehiculeRepository
+                .findVehiculesDisponiblesPourIntervention()
+                .stream()
+                .map(vehiculeMapper::toResponse)
+                .toList();
     }
 }

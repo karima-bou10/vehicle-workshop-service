@@ -15,6 +15,8 @@ import com.workshop.vehicle_service.vehicule.entity.Vehicule;
 import com.workshop.vehicle_service.vehicule.repository.VehiculeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Year;
@@ -38,11 +40,20 @@ public class interventionServiceImpl implements InterventionService {
      * @return une liste d'objets InterventionResponse représentant toutes les interventions
      */
     @Override
+    public Page<InterventionResponse> recupererListInterventions(Pageable pageable) {
+
+        return interventionRepository
+                .findByDeletedFalse(pageable)
+                .map(interventionMapper::toResponse);
+    }
+
+
+    @Override
     public List<InterventionResponse> recupererListInterventions() {
 
         List<Intervention> interventions =
 
-        interventionRepository.findByDeletedFalse();
+                interventionRepository.findByDeletedFalse();
 
         return interventions.stream()
 
@@ -109,6 +120,24 @@ public class interventionServiceImpl implements InterventionService {
         ).orElseThrow(() ->
                 new RuntimeException("Véhicule introuvable"));
 
+        List<StatutIntervention> statutsFinaux = List.of(
+                StatutIntervention.TERMINEE,
+                StatutIntervention.ANNULEE,
+                StatutIntervention.RESTITUEE
+        );
+
+        boolean interventionActive =
+                interventionRepository.existsByVehiculeIdAndDeletedFalseAndStatutNotIn(
+                        vehicule.getId(),
+                        statutsFinaux
+                );
+
+        if (interventionActive) {
+            throw new BusinessException(
+                    "Ce véhicule possède déjà une intervention en cours"
+            );
+        }
+
         Intervention intervention = new Intervention();
 
         intervention.setTypeIntervention(
@@ -154,21 +183,29 @@ public class interventionServiceImpl implements InterventionService {
         return interventionMapper.toResponse(intervention);
     }
     @Override
-    public InterventionResponse supprimerUneIntervention(Long idIntervention) {
+    public InterventionResponse archiveUneIntervention(Long idIntervention) {
+
         Intervention intervention = interventionRepository.findById(idIntervention)
                 .orElseThrow(() ->
                         new RuntimeException("Intervention introuvable"));
 
+        StatutIntervention statut = intervention.getStatut();
+
+        if (statut != StatutIntervention.TERMINEE
+                && statut != StatutIntervention.RESTITUEE
+                && statut != StatutIntervention.ANNULEE) {
+
+            throw new BusinessException(
+                    "Impossible d'archiver une intervention à ce stade"
+            );
+        }
+
         intervention.setDeleted(true);
 
-        interventionRepository.save(intervention);
+        Intervention interventionArchivee =
+                interventionRepository.save(intervention);
 
-        InterventionResponse response =
-                interventionMapper.toResponse(intervention);
-
-        interventionRepository.delete(intervention);
-
-        return response;
+        return interventionMapper.toResponse(interventionArchivee);
     }
 
     @Override
@@ -372,32 +409,25 @@ public class interventionServiceImpl implements InterventionService {
     }
 
     @Override
-    public List<InterventionResponse> recupererHistoriqueComplet() {
+    public Page<InterventionResponse> recupererHistoriqueComplet(Pageable pageable) {
 
-        List<Intervention> interventions =
-
-                interventionRepository.findAll();
-
-        return interventions.stream()
-
-                .map(interventionMapper::toResponse)
-
-                .toList();
+    return interventionRepository.findAll(pageable).map(interventionMapper::toResponse);
 
     }
 
-    public List<InterventionResponse> getInterventionsRestitueEnRetard() {
+    public Page<InterventionResponse> getInterventionsRestitueEnRetard(Pageable pageable) {
 
-        List<Intervention> interventions =
-                interventionRepository.findInterventionsEnRetard();
+       return
+                interventionRepository.findInterventionsEnRetard(pageable)
+                .map(interventionMapper::toResponse);
 
-        return interventions.stream()
-                .map(interventionMapper::toResponse)
-                .toList();
     }
     @Override
-    public List<InterventionResponse> rechercherInterventions(
-            InterventionSearchRequest request) {
+    public Page<InterventionResponse> rechercherInterventions(
+            InterventionSearchRequest request,
+            Pageable pageable,boolean includeArchived) {
+
+        System.out.println("REFERENCE REÇUE = [" + request.reference() + "]");
 
         var specification = InterventionSpecification.withFilters(
                 request.reference(),
@@ -406,14 +436,12 @@ public class interventionServiceImpl implements InterventionService {
                 request.priorite(),
                 request.typeIntervention(),
                 request.vehiculeId(),
-                request.mecanicienId()
+                request.mecanicienId(),
+                includeArchived
         );
 
-        List<Intervention> interventions =
-                interventionRepository.findAll(specification);
-
-        return interventions.stream()
-                .map(interventionMapper::toResponse)
-                .toList();
+        return interventionRepository
+                .findAll(specification, pageable)
+                .map(interventionMapper::toResponse);
     }
 }

@@ -19,4 +19,5 @@ public interface VehiculeService {
 
     Void deleteVehicule(Long id);
 
+    List<VehiculeResponse> getVehiculesDisponiblesPourIntervention();
 }
