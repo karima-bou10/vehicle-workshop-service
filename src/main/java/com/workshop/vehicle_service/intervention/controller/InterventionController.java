@@ -48,19 +48,25 @@ public class InterventionController {
             @RequestParam(required = false) Priorite priorite,
             @RequestParam(required = false) TypeIntervention typeIntervention,
             @RequestParam(required = false) Long vehiculeId,
-            @RequestParam(required = false) Long mecanicienId,@ParameterObject Pageable pageable) {
+            @RequestParam(required = false) Long mecanicienId,
+            @RequestParam(defaultValue = "false") boolean includeArchived,
+            @ParameterObject Pageable pageable) {
 
-        InterventionSearchRequest request = new InterventionSearchRequest(
-                reference,
-                immatriculation,
-                statut,
-                priorite,
-                typeIntervention,
-                vehiculeId,
-                mecanicienId
+        InterventionSearchRequest request =
+                new InterventionSearchRequest(
+                        reference,
+                        immatriculation,
+                        statut,
+                        priorite,
+                        typeIntervention,
+                        vehiculeId,
+                        mecanicienId
+                );
+
+        return interventionService.rechercherInterventions(
+                request,
+                pageable,includeArchived
         );
-
-        return interventionService.rechercherInterventions(request,pageable);
     }
 
     /**

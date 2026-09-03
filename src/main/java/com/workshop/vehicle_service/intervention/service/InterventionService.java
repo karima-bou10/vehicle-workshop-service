@@ -47,5 +47,5 @@ public interface InterventionService {
     Page<InterventionResponse>  getInterventionsRestitueEnRetard(Pageable pageable);
 
     Page<InterventionResponse> rechercherInterventions(
-            InterventionSearchRequest request,Pageable pageable);
+            InterventionSearchRequest request,Pageable pageable,boolean includeArchived);
 }

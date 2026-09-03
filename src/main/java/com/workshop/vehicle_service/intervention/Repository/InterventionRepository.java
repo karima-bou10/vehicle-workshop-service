@@ -42,6 +42,11 @@ public interface InterventionRepository extends JpaRepository<Intervention, Long
     Page<Intervention> findAll(Specification<Intervention> specification, Pageable pageable);
     Page<Intervention> findAll(Pageable pageable);
 
+    boolean existsByVehiculeIdAndDeletedFalseAndStatutNotIn(
+            Long vehiculeId,
+            List<StatutIntervention> statutsFinaux
+    );
+
 
 }
 

@@ -120,6 +120,24 @@ public class interventionServiceImpl implements InterventionService {
         ).orElseThrow(() ->
                 new RuntimeException("Véhicule introuvable"));
 
+        List<StatutIntervention> statutsFinaux = List.of(
+                StatutIntervention.TERMINEE,
+                StatutIntervention.ANNULEE,
+                StatutIntervention.RESTITUEE
+        );
+
+        boolean interventionActive =
+                interventionRepository.existsByVehiculeIdAndDeletedFalseAndStatutNotIn(
+                        vehicule.getId(),
+                        statutsFinaux
+                );
+
+        if (interventionActive) {
+            throw new BusinessException(
+                    "Ce véhicule possède déjà une intervention en cours"
+            );
+        }
+
         Intervention intervention = new Intervention();
 
         intervention.setTypeIntervention(
@@ -407,7 +425,7 @@ public class interventionServiceImpl implements InterventionService {
     @Override
     public Page<InterventionResponse> rechercherInterventions(
             InterventionSearchRequest request,
-            Pageable pageable) {
+            Pageable pageable,boolean includeArchived) {
 
         System.out.println("REFERENCE REÇUE = [" + request.reference() + "]");
 
@@ -418,7 +436,8 @@ public class interventionServiceImpl implements InterventionService {
                 request.priorite(),
                 request.typeIntervention(),
                 request.vehiculeId(),
-                request.mecanicienId()
+                request.mecanicienId(),
+                includeArchived
         );
 
         return interventionRepository

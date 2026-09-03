@@ -21,7 +21,8 @@ public class InterventionSpecification {
             Priorite priorite,
             TypeIntervention typeIntervention,
             Long vehiculeId,
-            Long mecanicienId
+            Long mecanicienId,
+            boolean includeArchived
     ) {
 
         return (root, query, criteriaBuilder) -> {
@@ -29,9 +30,11 @@ public class InterventionSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             // Exclure les interventions archivées
-            predicates.add(
-                    criteriaBuilder.isFalse(root.get("deleted"))
-            );
+            if (!includeArchived) {
+                predicates.add(
+                        criteriaBuilder.isFalse(root.get("deleted"))
+                );
+            }
 
             // Recherche par référence
             if (reference != null && !reference.isBlank()) {
