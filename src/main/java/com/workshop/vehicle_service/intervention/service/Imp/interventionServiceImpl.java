@@ -1,5 +1,6 @@
 package com.workshop.vehicle_service.intervention.service.Imp;
 
+import com.workshop.vehicle_service.common.ResourceNotFoundException;
 import com.workshop.vehicle_service.intervention.Repository.InterventionRepository;
 import com.workshop.vehicle_service.intervention.dtos.*;
 import com.workshop.vehicle_service.intervention.dtos.InterventionResponse;
@@ -19,6 +20,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Year;
 import java.util.List;
 
@@ -96,10 +100,9 @@ public class interventionServiceImpl implements InterventionService {
         Intervention intervention = interventionRepository.findById(idIntervention)
                 .orElseThrow(() -> new RuntimeException("Intervention introuvable"));
         // Vérification du statut
-        if (intervention.getStatut() != StatutIntervention.RECUE
-                && intervention.getStatut() != StatutIntervention.DIAGNOSTIC_EN_COURS) {
+        if (intervention.getStatut() != StatutIntervention.RECUE) {
             throw new BusinessException(
-                    "La modification n'est autorisée que pour les interventions en statut RECUE ou DIAGNOSTIC_EN_COURS.");
+                    "La modification n'est autorisée que pour les interventions en statut RECUE");
         }
 
         interventionMapper.updateEntity(request, intervention);
@@ -152,13 +155,11 @@ public class interventionServiceImpl implements InterventionService {
                 interventionRequest.priorite()
         );
 
-        intervention.setDateDepot(
-                interventionRequest.dateDepot()
-        );
+        intervention.setDateDepot(LocalDateTime.now());
 
-        intervention.setDateRestitutionPrevue(
+      /*** intervention.setDateRestitutionPrevue(
                 interventionRequest.dateRestitutionPrevue()
-        );
+        );**/
 
         // RG-AUTO-03
         intervention.setStatut(StatutIntervention.RECUE);
@@ -213,66 +214,51 @@ public class interventionServiceImpl implements InterventionService {
             Long interventionId,
             AffectationMecanicienRequest request) throws BusinessException {
 
-        // 1. Récupérer l'intervention
         Intervention intervention = interventionRepository.findById(interventionId)
                 .orElseThrow(() ->
-                        new RuntimeException("Intervention introuvable"));
+                        new ResourceNotFoundException("Intervention introuvable"));
 
-        // 2. Vérifier le statut de l'intervention
-        if (
-                intervention.getStatut() == StatutIntervention.EN_REPARATION ||
-                        intervention.getStatut() == StatutIntervention.TERMINEE ||
-                        intervention.getStatut() == StatutIntervention.RESTITUEE ||
-                        intervention.getStatut() == StatutIntervention.ANNULEE
-        ) {
+        // Vérification du statut de l'intervention
+        StatutIntervention statut = intervention.getStatut();
+
+        if (statut == StatutIntervention.EN_REPARATION
+                || statut == StatutIntervention.TERMINEE
+                || statut == StatutIntervention.RESTITUEE
+                || statut == StatutIntervention.ANNULEE) {
+
             throw new BusinessException(
                     "Impossible de modifier l'affectation à ce stade de l'intervention"
             );
         }
 
-        // 3. Récupérer le nouveau mécanicien
+        Long nouveauMecanicienId = request.mecanicienId();
+        Mecanicien mecanicienActuel = intervention.getMecanicien();
+
+        // Aucun changement : le mécanicien demandé est déjà affecté
+        if (mecanicienActuel != null
+                && mecanicienActuel.getId().equals(nouveauMecanicienId)) {
+
+            return interventionMapper.toResponse(intervention);
+        }
+
+        // Récupération du nouveau mécanicien uniquement si nécessaire
         Mecanicien nouveauMecanicien = mecanicienRepository
-                .findById(request.mecanicienId())
+                .findById(nouveauMecanicienId)
                 .orElseThrow(() ->
-                        new RuntimeException("Mécanicien introuvable"));
+                        new ResourceNotFoundException("Mécanicien introuvable"));
 
-        // 4. Vérifier la disponibilité du nouveau mécanicien
-        // Si c'est le même mécanicien déjà affecté, il est accepté
-        boolean memeMecanicien =
-                intervention.getMecanicien() != null &&
-                        intervention.getMecanicien()
-                                .getId()
-                                .equals(nouveauMecanicien.getId());
-
-        if (!memeMecanicien && !nouveauMecanicien.isDisponible()) {
+        // Vérification de la disponibilité du nouveau mécanicien
+        if (!nouveauMecanicien.isDisponible()) {
             throw new BusinessException(
                     "Le mécanicien n'est pas disponible"
             );
         }
 
-        // 5. Si un ancien mécanicien est affecté et qu'on le change,
-        //    rendre l'ancien mécanicien disponible
-        if (intervention.getMecanicien() != null && !memeMecanicien) {
-
-            Mecanicien ancienMecanicien = intervention.getMecanicien();
-
-            ancienMecanicien.setDisponible(true);
-            mecanicienRepository.save(ancienMecanicien);
-        }
-
-        // 6. Affecter le nouveau mécanicien
+        // Réaffectation
         intervention.setMecanicien(nouveauMecanicien);
 
-        // 7. Le nouveau mécanicien devient indisponible
-        if (!memeMecanicien) {
-            nouveauMecanicien.setDisponible(false);
-            mecanicienRepository.save(nouveauMecanicien);
-        }
-
-        // 8. Sauvegarder l'intervention
         Intervention saved = interventionRepository.save(intervention);
 
-        // 9. Retourner la réponse
         return interventionMapper.toResponse(saved);
     }
 
@@ -320,6 +306,27 @@ public class interventionServiceImpl implements InterventionService {
         return interventionMapper.toResponse(intervention);
     }
 
+    /**
+     * Ajoute ou modifie un devis pour une intervention.
+     *
+     * Règles métier :
+     * - L'intervention doit exister.
+     * - Un diagnostic doit être renseigné avant la création du devis.
+     * - La date de restitution prévue ne peut pas être antérieure à la date et heure actuelles.
+     * - Si aucun devis n'existe, le devis est créé et le statut passe à DEVIS_A_VALIDER.
+     * - Si un devis existe déjà, sa modification est autorisée uniquement lorsque
+     *   l'intervention est au statut DEVIS_A_VALIDER.
+     * - Le coût estimé et la date de restitution prévue sont alors mis à jour.
+     *
+     * @param interventionId identifiant de l'intervention
+     * @param request données du devis (coût estimé et date de restitution prévue)
+     * @return l'intervention mise à jour
+     * @throws RuntimeException si l'intervention est introuvable,
+     *                          si le diagnostic est absent,
+     *                          si la date de restitution est invalide
+     *                          ou si la modification du devis n'est plus autorisée
+     */
+
     @Override
     public InterventionResponse ajouterDevis(
             Long interventionId,
@@ -335,23 +342,35 @@ public class interventionServiceImpl implements InterventionService {
                     "Le diagnostic est obligatoire avant le devis");
         }
 
-        // Devis déjà existant
+        LocalDateTime now = LocalDateTime.now()
+                .withSecond(0)
+                .withNano(0);
+
+        if (request.dateRestitutionPrevue().isBefore(now)) {
+            throw new RuntimeException(
+                    "La date de restitution prévue ne peut pas être dans le passé");
+        }
+
+        // Modification
         if (intervention.getCoutEstime() != null) {
 
-            // Autoriser uniquement la modification d'un devis en attente
             if (intervention.getStatut() != StatutIntervention.DEVIS_A_VALIDER) {
                 throw new RuntimeException(
                         "Le devis ne peut plus être modifié");
             }
 
             intervention.setCoutEstime(request.coutEstime());
+            intervention.setDateRestitutionPrevue(
+                    request.dateRestitutionPrevue());
 
             return interventionMapper.toResponse(
                     interventionRepository.save(intervention));
         }
 
-        // Création du devis
+        // Création
         intervention.setCoutEstime(request.coutEstime());
+        intervention.setDateRestitutionPrevue(
+                request.dateRestitutionPrevue());
 
         statutInterventionService.changerStatutIntervention(
                 intervention,
@@ -437,11 +456,67 @@ public class interventionServiceImpl implements InterventionService {
                 request.typeIntervention(),
                 request.vehiculeId(),
                 request.mecanicienId(),
-                includeArchived
+                includeArchived,
+                request.retard()
         );
 
         return interventionRepository
                 .findAll(specification, pageable)
                 .map(interventionMapper::toResponse);
+    }
+
+    @Override
+    public String exporterCsv(InterventionSearchRequest request) {
+
+        var specification = InterventionSpecification.withFilters(
+                request.reference(),
+                request.immatriculation(),
+                request.statut(),
+                request.priorite(),
+                request.typeIntervention(),
+                request.vehiculeId(),
+                request.mecanicienId(),
+                false,
+                request.retard()
+        );
+
+        List<Intervention> interventions =
+                interventionRepository.findAll(specification);
+
+        StringBuilder csv = new StringBuilder();
+
+        csv.append("Reference;Type;Statut;Priorite;Vehicule;Mecanicien;DateDepot;CoutEstime\n");
+
+        for (Intervention i : interventions) {
+
+            csv.append(i.getReference()).append(';');
+            csv.append(i.getTypeIntervention()).append(';');
+            csv.append(i.getStatut()).append(';');
+            csv.append(i.getPriorite()).append(';');
+
+            csv.append(
+                    i.getVehicule() != null
+                            ? i.getVehicule().getImmatriculationFictive()
+                            : ""
+            ).append(';');
+
+            csv.append(
+                    i.getMecanicien() != null
+                            ? i.getMecanicien().getNom()
+                            : ""
+            ).append(';');
+
+            csv.append(i.getDateDepot()).append(';');
+
+            csv.append(
+                    i.getCoutEstime() != null
+                            ? i.getCoutEstime()
+                            : ""
+            );
+
+            csv.append('\n');
+        }
+
+        return csv.toString();
     }
 }

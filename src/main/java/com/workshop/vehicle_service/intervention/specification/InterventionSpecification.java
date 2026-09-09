@@ -9,6 +9,7 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,8 @@ public class InterventionSpecification {
             TypeIntervention typeIntervention,
             Long vehiculeId,
             Long mecanicienId,
-            boolean includeArchived
+            boolean includeArchived,
+            boolean retard
     ) {
 
         return (root, query, criteriaBuilder) -> {
@@ -118,6 +120,25 @@ public class InterventionSpecification {
                                 mecanicienId
                         )
                 );
+            }
+            if (retard) {
+
+                predicates.add(
+                        criteriaBuilder.lessThan(
+                                root.get("dateRestitutionPrevue"),
+                                LocalDateTime.now()
+                        )
+                );
+
+                predicates.add(
+                        criteriaBuilder.not(
+                                root.get("statut").in(
+                                        StatutIntervention.RESTITUEE,
+                                        StatutIntervention.ANNULEE
+                                )
+                        )
+                );
+
             }
 
             return criteriaBuilder.and(

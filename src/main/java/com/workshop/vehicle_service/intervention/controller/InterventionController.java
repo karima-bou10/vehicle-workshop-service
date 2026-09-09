@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
@@ -50,6 +51,7 @@ public class InterventionController {
             @RequestParam(required = false) Long vehiculeId,
             @RequestParam(required = false) Long mecanicienId,
             @RequestParam(defaultValue = "false") boolean includeArchived,
+            @RequestParam(defaultValue = "false") boolean retard,
             @ParameterObject Pageable pageable) {
 
         InterventionSearchRequest request =
@@ -60,7 +62,8 @@ public class InterventionController {
                         priorite,
                         typeIntervention,
                         vehiculeId,
-                        mecanicienId
+                        mecanicienId,
+                       retard = retard
                 );
 
         return interventionService.rechercherInterventions(
@@ -241,6 +244,50 @@ public class InterventionController {
 
         return interventionService.getInterventionsRestitueEnRetard(pageable);
 
+    }
+    @GetMapping("/export/csv")
+    @PreAuthorize("hasAny\n" +
+            "Interventions\n" +
+            "Interventions en retard : 5 intervention(s)\n" +
+            "\n" +
+            "Export CSV\n" +
+            "Nouvelle intervention\n" +
+            "Archives des interventionsRole('ROLE_MANAGER','ROLE_USER')")
+    public ResponseEntity<byte[]> exporterCsv(
+            @RequestParam(required = false) String reference,
+            @RequestParam(required = false) String immatriculation,
+            @RequestParam(required = false) StatutIntervention statut,
+            @RequestParam(required = false) Priorite priorite,
+            @RequestParam(required = false) TypeIntervention typeIntervention,
+            @RequestParam(required = false) Long vehiculeId,
+            @RequestParam(required = false) Long mecanicienId,
+            @RequestParam(defaultValue = "false") boolean retard
+    ) {
+
+        InterventionSearchRequest request =
+                new InterventionSearchRequest(
+                        reference,
+                        immatriculation,
+                        statut,
+                        priorite,
+                        typeIntervention,
+                        vehiculeId,
+                        mecanicienId,
+                        retard
+                );
+
+        String csv = interventionService.exporterCsv(request);
+
+        return ResponseEntity.ok()
+                .header(
+                        "Content-Disposition",
+                        "attachment; filename=interventions.csv"
+                )
+                .header(
+                        "Content-Type",
+                        "text/csv; charset=UTF-8"
+                )
+                .body(csv.getBytes(StandardCharsets.UTF_8));
     }
 }
 

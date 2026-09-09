@@ -48,4 +48,6 @@ public interface InterventionService {
 
     Page<InterventionResponse> rechercherInterventions(
             InterventionSearchRequest request,Pageable pageable,boolean includeArchived);
+
+    String exporterCsv(InterventionSearchRequest request);
 }

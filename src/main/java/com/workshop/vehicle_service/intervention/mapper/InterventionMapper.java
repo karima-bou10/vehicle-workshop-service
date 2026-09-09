@@ -22,10 +22,16 @@ public interface InterventionMapper {
     Intervention toEntity(InterventionCreationRequest request);
 
     @Mapping(source = "vehicule.id", target = "vehiculeId")
+    @Mapping(source = "vehicule.immatriculationFictive", target = "immatriculationVehicule")
+    @Mapping(source = "vehicule.marque", target = "marque")
+    @Mapping(source = "vehicule.modele", target = "modele")
+
     @Mapping(source = "mecanicien.id", target = "mecanicienId")
     @Mapping(source = "mecanicien.nom", target = "nomMecanicien")
     @Mapping(source = "mecanicien.prenom", target = "prenomMecanicien")
+
     InterventionResponse toResponse(Intervention intervention);
+
 
     List<InterventionResponse> toResponseList(List<Intervention> list);
 

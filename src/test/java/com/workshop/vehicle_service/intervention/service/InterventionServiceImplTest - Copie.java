@@ -65,7 +65,9 @@ class InterventionServiceImplTest {
     }
 
     @Test
-    void affectationMecanicien_shouldAffectAvailableMechanic() throws BusinessException {
+    void affectationMecanicien_shouldAffectAvailableMechanic()
+            throws BusinessException {
+
         AffectationMecanicienRequest request =
                 new AffectationMecanicienRequest(20L);
 
@@ -78,22 +80,24 @@ class InterventionServiceImplTest {
 
         when(interventionRepository.findById(1L))
                 .thenReturn(Optional.of(intervention));
+
         when(mecanicienRepository.findById(20L))
                 .thenReturn(Optional.of(nouveauMecanicien));
+
         when(interventionRepository.save(intervention))
                 .thenReturn(saved);
+
         when(interventionMapper.toResponse(saved))
                 .thenReturn(expected);
 
         InterventionResponse result =
-                interventionService.affectationMecanicienIntervention(1L, request);
+                interventionService
+                        .affectationMecanicienIntervention(1L, request);
 
         assertSame(nouveauMecanicien, intervention.getMecanicien());
-        assertFalse(nouveauMecanicien.isDisponible());
         assertSame(expected, result);
 
         verify(interventionRepository).save(intervention);
-        verify(mecanicienRepository).save(nouveauMecanicien);
         verify(interventionMapper).toResponse(saved);
     }
 
@@ -120,7 +124,9 @@ class InterventionServiceImplTest {
     }
 
     @Test
-    void affectationMecanicien_shouldAllowModificationBeforeRepair() throws BusinessException {
+    void affectationMecanicien_shouldAllowModificationBeforeRepair()
+            throws BusinessException {
+
         intervention.setMecanicien(ancienMecanicien);
 
         AffectationMecanicienRequest request =
@@ -135,24 +141,25 @@ class InterventionServiceImplTest {
 
         when(interventionRepository.findById(1L))
                 .thenReturn(Optional.of(intervention));
+
         when(mecanicienRepository.findById(20L))
                 .thenReturn(Optional.of(nouveauMecanicien));
+
         when(interventionRepository.save(intervention))
                 .thenReturn(saved);
+
         when(interventionMapper.toResponse(saved))
                 .thenReturn(expected);
 
         InterventionResponse result =
-                interventionService.affectationMecanicienIntervention(1L, request);
+                interventionService
+                        .affectationMecanicienIntervention(1L, request);
 
         assertSame(nouveauMecanicien, intervention.getMecanicien());
-        assertTrue(ancienMecanicien.isDisponible());
-        assertFalse(nouveauMecanicien.isDisponible());
-
-        verify(mecanicienRepository).save(ancienMecanicien);
-        verify(mecanicienRepository).save(nouveauMecanicien);
-        verify(interventionRepository).save(intervention);
         assertSame(expected, result);
+
+        verify(interventionRepository).save(intervention);
+        verify(interventionMapper).toResponse(saved);
     }
 
     @Test
