@@ -11,6 +11,7 @@ public record InterventionSearchRequest(
         Priorite priorite,
         TypeIntervention typeIntervention,
         Long vehiculeId,
-        Long mecanicienId
+        Long mecanicienId,
+         Boolean retard
 ) {
 }
