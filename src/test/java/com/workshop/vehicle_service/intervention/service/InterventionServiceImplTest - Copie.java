@@ -320,27 +320,5 @@ class InterventionServiceImplTest {
         assertSame(expected, result);
     }
 
-    @Test
-    void modifierUneIntervention_shouldAllowWhenStatusIsDiagnosticEnCours() throws BusinessException {
-        intervention.setStatut(StatutIntervention.DIAGNOSTIC_EN_COURS);
 
-        InterventionUpdateRequest request =
-                mock(InterventionUpdateRequest.class);
-
-        InterventionResponse expected = mock(InterventionResponse.class);
-
-        when(interventionRepository.findById(1L))
-                .thenReturn(Optional.of(intervention));
-        when(interventionRepository.save(intervention))
-                .thenReturn(intervention);
-        when(interventionMapper.toResponse(intervention))
-                .thenReturn(expected);
-
-        InterventionResponse result =
-                interventionService.modifierUneIntervention(request, 1L);
-
-        verify(interventionMapper).updateEntity(request, intervention);
-        verify(interventionRepository).save(intervention);
-        assertSame(expected, result);
-    }
 }
