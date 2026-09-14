@@ -1,46 +1,108 @@
 package com.workshop.vehicle_service.vehicule.service.impl;
 
+import com.workshop.vehicle_service.common.ResourceNotFoundException;
 import com.workshop.vehicle_service.vehicule.dto.VehiculeRequest;
 import com.workshop.vehicle_service.vehicule.dto.VehiculeResponse;
+import com.workshop.vehicle_service.vehicule.entity.Vehicule;
 import com.workshop.vehicle_service.vehicule.mapper.VehiculeMapper;
 import com.workshop.vehicle_service.vehicule.repository.VehiculeRepository;
-import com.workshop.vehicle_service.vehicule.service.VericuleService;
+import com.workshop.vehicle_service.vehicule.service.VehiculeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Implémentation du service de gestion des véhicules.
+ */
+
 @Service
+@Transactional
 @RequiredArgsConstructor
-public class VehiculeServiceImpl implements VericuleService {
+public class VehiculeServiceImpl implements VehiculeService {
 
     private final VehiculeRepository vehiculeRepository;
     private final VehiculeMapper vehiculeMapper;
 
-
+/**
+     * Récupère la liste paginée de tous les véhicules.
+     *
+     * @param pageable les informations de pagination
+     * @return une page d'objets VehiculeResponse représentant tous les véhicules
+     */
     @Override
-    public List<VehiculeResponse> findAll() {
+    public Page<VehiculeResponse> getAllVehicules(String search, Pageable pageable) {
+        Page<Vehicule> result = (search != null && !search.isBlank())
+                ?vehiculeRepository.searchByKeyword(search.trim(), pageable)
+                :vehiculeRepository.findAll(pageable);
+        return result.map(vehiculeMapper::toResponse);
+    }
 
-        return List.of();
+    /**
+     * Récupère un véhicule spécifique par son identifiant.
+     *
+     * @param id l'identifiant du véhicule à récupérer
+     * @return un objet VehiculeResponse représentant le véhicule trouvé
+     * @throws ResourceNotFoundException si le véhicule avec l'identifiant spécifié n'est pas trouvé
+     */
+    @Override
+    public VehiculeResponse getVehiculeById(Long id) {
+        Vehicule vehicule = vehiculeRepository.findById(id)
+                                          .orElseThrow(()->new ResourceNotFoundException("Véhicule introuvable avec l'id" + id));
+
+        return vehiculeMapper.toResponse(vehicule);
+    }
+
+    /**
+     * Crée un nouveau véhicule à partir des informations fournies dans la requête.
+     *
+     * @param request l'objet VehiculeRequest contenant les informations du véhicule à créer
+     * @return un objet VehiculeResponse représentant le véhicule créé
+     */
+    @Override
+    public VehiculeResponse createVehicule(VehiculeRequest request) {
+        Vehicule vehicule = vehiculeMapper.toEntity(request);
+        return vehiculeMapper.toResponse(vehiculeRepository.save(vehicule));
+    }
+
+    /**
+     * Met à jour un véhicule existant avec les nouvelles informations fournies dans la requête.
+     *
+     * @param id      l'identifiant du véhicule à mettre à jour
+     * @param request l'objet VehiculeRequest contenant les nouvelles informations du véhicule
+     * @return un objet VehiculeResponse représentant le véhicule mis à jour
+     * @throws ResourceNotFoundException si le véhicule avec l'identifiant spécifié n'est pas trouvé
+     */
+    @Override
+    public VehiculeResponse updateVehicule(Long id, VehiculeRequest request) {
+        Vehicule vehicule = vehiculeRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Véhicule introuvable avec l'id"+id));
+        vehiculeMapper.updateEntityFromRequest(request, vehicule);
+        return vehiculeMapper.toResponse(vehiculeRepository.save(vehicule));
     }
 
     @Override
-    public VehiculeResponse findById(Long id) {
+    public Void deleteVehicule(Long id) {
+        Vehicule vehicule = vehiculeRepository.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException("Véhicule introuvable avec l'id" + id));
+
+        if (!vehicule.getInterventions().isEmpty()) {
+            throw new RuntimeException("Suppression impossible : le véhicule est déjà associé à des interventions existantes.");
+        }
+
+        vehiculeRepository.deleteById(id);
         return null;
     }
 
     @Override
-    public VehiculeResponse create(VehiculeRequest request) {
-        return null;
-    }
+    public List<VehiculeResponse> getVehiculesDisponiblesPourIntervention() {
 
-    @Override
-    public VehiculeResponse update(Long id, VehiculeRequest request) {
-        return null;
-    }
-
-    @Override
-    public Void delete(Long id) {
-        return null;
+        return vehiculeRepository
+                .findVehiculesDisponiblesPourIntervention()
+                .stream()
+                .map(vehiculeMapper::toResponse)
+                .toList();
     }
 }

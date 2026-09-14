@@ -1,6 +1,5 @@
-package com.workshop.vehicle_service.Historique.entity;
+package com.workshop.vehicle_service.intervention.entity;
 
-import com.workshop.vehicle_service.intervention.entity.Intervention;
 import com.workshop.vehicle_service.intervention.enums.StatutIntervention;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,9 +23,11 @@ public class HistoriqueIntervention {
     private Long id;
 
     @Column(name = "ancien_statut", nullable = false)
+    @Enumerated(EnumType.STRING)
     private StatutIntervention ancienStatut;
 
     @Column(name = "nouveau_statut", nullable = false)
+    @Enumerated(EnumType.STRING)
     private StatutIntervention nouveauStatut;
 
     @Column(name = "commentaire", nullable = false)
@@ -36,7 +37,7 @@ public class HistoriqueIntervention {
     private String auteur;
 
     @Column(name = "date", nullable = false)
-    private LocalDateTime date;
+    private LocalDateTime dateModification;
 
     @ManyToOne
     @JoinColumn(name = "intervention_id")

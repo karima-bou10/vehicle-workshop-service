@@ -1,9 +1,12 @@
 package com.workshop.vehicle_service.vehicule.entity;
 
+import com.workshop.vehicle_service.intervention.entity.Intervention;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(name = "vehicule")
@@ -30,5 +33,8 @@ public class Vehicule {
 
     @Column(name = "client_fictif", length =100)
     private String clientFictif;
+
+    @OneToMany(mappedBy = "vehicule",fetch = FetchType.LAZY)
+    List<Intervention> interventions;
 
 }

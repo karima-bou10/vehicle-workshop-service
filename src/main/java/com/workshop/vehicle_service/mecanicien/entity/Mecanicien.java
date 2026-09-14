@@ -2,17 +2,16 @@ package com.workshop.vehicle_service.mecanicien.entity;
 
 import com.workshop.vehicle_service.intervention.entity.Intervention;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Table(name = "mecanicien")
 public class Mecanicien {
 
@@ -33,6 +32,6 @@ public class Mecanicien {
     @Column(name="disponible", nullable = false)
     private boolean disponible = true;
 
-    @OneToMany(mappedBy = "mecanicien",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Intervention> inetventions;
+    @OneToMany(mappedBy = "mecanicien",fetch = FetchType.LAZY)
+    private List<Intervention> interventions;
 }
